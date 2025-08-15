@@ -2,7 +2,17 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "../../components/ui/button";
-import { ArrowLeft, Home, Trophy, Clock, Users, Truck, Car, Loader2, AlertTriangle } from 'lucide-react';
+import {
+  ArrowLeft,
+  Home,
+  Trophy,
+  Clock,
+  Users,
+  Truck,
+  Car,
+  Loader2,
+  AlertTriangle,
+} from "lucide-react";
 import { ButtonHomeBack } from "@/components/ButtonHomeBack";
 import { GameService } from "@/api/gameService";
 import { Map as Desafio } from "@/types";
@@ -11,8 +21,12 @@ export const ApresentacaoDesafioPage = () => {
   const navigate = useNavigate();
 
   // 1. BUSCA A LISTA DE TODOS OS DESAFIOS (MAPAS) DA API
-  const { data: desafios, isLoading, isError } = useQuery<Desafio[]>({
-    queryKey: ['desafios'], // Uma chave de query para buscar a lista
+  const {
+    data: desafios,
+    isLoading,
+    isError,
+  } = useQuery<Desafio[]>({
+    queryKey: ["desafios"], // Uma chave de query para buscar a lista
     queryFn: GameService.getMaps, // Usa a função que busca todos
   });
 
@@ -34,10 +48,12 @@ export const ApresentacaoDesafioPage = () => {
 
   const getVehicleIcon = (tipo: string) => {
     switch (tipo) {
-      case 'CARRO':
+      case "CARRO":
         return <Car size={18} className="text-[#e3922a] mr-2 flex-shrink-0" />;
       default:
-        return <Truck size={18} className="text-[#e3922a] mr-2 flex-shrink-0" />;
+        return (
+          <Truck size={18} className="text-[#e3922a] mr-2 flex-shrink-0" />
+        );
     }
   };
 
@@ -47,7 +63,9 @@ export const ApresentacaoDesafioPage = () => {
       <div className="flex h-screen items-center justify-center bg-gradient-to-b from-sky-300 to-purple-400">
         <div className="text-center">
           <Loader2 className="animate-spin mx-auto h-12 w-12 text-white" />
-          <p className="[font-family:'Silkscreen',Helvetica] text-white text-lg mt-4">CARREGANDO DESAFIOS...</p>
+          <p className="[font-family:'Silkscreen',Helvetica] text-white text-lg mt-4">
+            CARREGANDO DESAFIOS...
+          </p>
         </div>
       </div>
     );
@@ -60,9 +78,14 @@ export const ApresentacaoDesafioPage = () => {
         <div>
           <AlertTriangle className="mx-auto h-12 w-12 text-white mb-4" />
           <h1 className="[font-family:'Silkscreen',Helvetica] text-white text-xl mb-4">
-            {isError ? "Erro ao carregar os desafios." : "Nenhum desafio encontrado."}
+            {isError
+              ? "Erro ao carregar os desafios."
+              : "Nenhum desafio encontrado."}
           </h1>
-          <Button onClick={() => navigate('/game-selection')} className="bg-white text-black">
+          <Button
+            onClick={() => navigate("/game-selection")}
+            className="bg-white text-black"
+          >
             Voltar para Seleção de Jogos
           </Button>
         </div>
@@ -75,8 +98,12 @@ export const ApresentacaoDesafioPage = () => {
     <div className="bg-white flex flex-row justify-center w-full">
       <div className="w-full min-h-screen [background:linear-gradient(180deg,rgba(32,2,89,1)_0%,rgba(121,70,213,1)_100%)] relative overflow-hidden z-10">
         <div className="flex gap-5 absolute top-4 left-4 z-10">
-          <ButtonHomeBack onClick={() => navigate(-1)}><ArrowLeft/></ButtonHomeBack>
-          <ButtonHomeBack onClick={() => navigate("/perfil")}><Home/></ButtonHomeBack>
+          <ButtonHomeBack onClick={() => navigate(-1)}>
+            <ArrowLeft />
+          </ButtonHomeBack>
+          <ButtonHomeBack onClick={() => navigate("/perfil")}>
+            <Home />
+          </ButtonHomeBack>
         </div>
 
         <div className="pt-16 pb-8 px-4 flex justify-center items-center min-h-screen z-10">
@@ -86,54 +113,89 @@ export const ApresentacaoDesafioPage = () => {
                 {desafio.nome}
               </h1>
             </div>
-            
+
             <div className="overflow-y-auto p-4 flex-1">
               <div className="border-2 border-black rounded-lg overflow-hidden h-[200px] mb-4">
-                <img src={desafio.imagem} alt="Imagem do desafio" className="w-full h-full object-cover" />
+                <img
+                  src={desafio.imagem}
+                  alt="Imagem do desafio"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="border-2 border-black rounded-lg p-3 bg-gray-50 mb-4">
-                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2">DESCRIÇÃO:</h3>
-                <p className="[font-family:'Silkscreen',Helvetica] text-[12px]">{desafio.descricao}</p>
+                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2">
+                  DESCRIÇÃO:
+                </h3>
+                <p className="[font-family:'Silkscreen',Helvetica] text-[12px]">
+                  {desafio.descricao}
+                </p>
               </div>
               <div className="border-2 border-black rounded-lg p-3 bg-gray-50 mb-4">
-                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2">DETALHES:</h3>
+                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2">
+                  DETALHES:
+                </h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center">
-                    <Trophy size={16} className="text-[#e3922a] mr-2 flex-shrink-0" />
-                    <span className="[font-family:'Silkscreen',Helvetica] text-[11px]">DIFICULDADE: {desafio.dificuldade}</span>
+                    <Trophy
+                      size={16}
+                      className="text-[#e3922a] mr-2 flex-shrink-0"
+                    />
+                    <span className="[font-family:'Silkscreen',Helvetica] text-[11px]">
+                      DIFICULDADE: {desafio.dificuldade}
+                    </span>
                   </div>
                   <div className="flex items-center">
-                    <Clock size={16} className="text-[#e3922a] mr-2 flex-shrink-0" />
-                    <span className="[font-family:'Silkscreen',Helvetica] text-[11px]">TEMPO: {desafio.tempo_limite}</span>
+                    <Clock
+                      size={16}
+                      className="text-[#e3922a] mr-2 flex-shrink-0"
+                    />
+                    <span className="[font-family:'Silkscreen',Helvetica] text-[11px]">
+                      TEMPO: {desafio.tempo_limite}
+                    </span>
                   </div>
                   <div className="flex items-center col-span-2">
-                    <Users size={16} className="text-[#e3922a] mr-2 flex-shrink-0" />
-                    <span className="[font-family:'Silkscreen',Helvetica] text-[11px]">JOGADORES: {desafio.min_jogadores}-{desafio.max_jogadores}</span>
+                    <Users
+                      size={16}
+                      className="text-[#e3922a] mr-2 flex-shrink-0"
+                    />
+                    <span className="[font-family:'Silkscreen',Helvetica] text-[11px]">
+                      JOGADORES: {desafio.min_jogadores}-{desafio.max_jogadores}
+                    </span>
                   </div>
                 </div>
               </div>
               <div className="border-2 border-black rounded-lg p-3 bg-gray-50 mb-4">
-                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2 text-green-600">OBJETIVO:</h3>
-                <p className="[font-family:'Silkscreen',Helvetica] text-[12px] font-bold text-green-600">{desafio.objetivo}</p>
+                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2 text-green-600">
+                  OBJETIVO:
+                </h3>
+                <p className="[font-family:'Silkscreen',Helvetica] text-[12px] font-bold text-green-600">
+                  {desafio.objetivo}
+                </p>
               </div>
               <div className="border-2 border-dashed border-[#e3922a] rounded-lg p-3 bg-yellow-50 mb-4">
-                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2">SUAS FERRAMENTAS:</h3>
+                <h3 className="[font-family:'Silkscreen',Helvetica] font-bold text-[14px] mb-2">
+                  SUAS FERRAMENTAS:
+                </h3>
                 <div className="space-y-3">
                   {desafio.ferramentas.map((ferramenta: any, index: number) => (
                     <div key={index} className="flex items-start">
                       {getVehicleIcon(ferramenta.tipo)}
                       <div>
-                        <span className="[font-family:'Silkscreen',Helvetica] text-[11px] font-bold block">{ferramenta.tipo}</span>
-                        <span className="[font-family:'Silkscreen',Helvetica] text-[10px] text-gray-700">{ferramenta.descricao}</span>
+                        <span className="[font-family:'Silkscreen',Helvetica] text-[11px] font-bold block">
+                          {ferramenta.tipo}
+                        </span>
+                        <span className="[font-family:'Silkscreen',Helvetica] text-[10px] text-gray-700">
+                          {ferramenta.descricao}
+                        </span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            
+
             <div className="p-4 border-t-2 flex justify-center border-black bg-gray-50">
-              <Button 
+              <Button
                 onClick={handleAceitarDesafio}
                 disabled={carregando}
                 className="w-1/2 py-3 bg-[#29D8FF] border-2 border-black rounded-md [font-family:'Silkscreen',Helvetica] font-bold text-black text-[16px] hover:bg-[#20B4D2] transform transition-transform duration-300 hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"

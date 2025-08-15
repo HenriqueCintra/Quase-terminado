@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 import { Vehicle } from "../types/vehicle"; // Reutilizando a tipagem de veículo do seu projeto
 
 // Definindo um estado inicial para o veículo e o jogador
@@ -32,7 +32,9 @@ interface GameContextType {
   formatCurrency: (value: number) => string;
 }
 
-const GameContext = createContext<GameContextType | undefined>(undefined);
+export const GameContext = createContext<GameContextType | undefined>(
+  undefined
+);
 
 export const useGame = () => {
   const context = useContext(GameContext);

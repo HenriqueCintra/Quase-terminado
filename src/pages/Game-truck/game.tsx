@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import kaboom from "kaboom";
-import './game.css';
+import "./game.css";
 import { PartidaData } from "../../types/ranking";
 import { Vehicle } from "../../types/vehicle";
 import { GameMiniMap } from "./GameMiniMap";
@@ -11,7 +11,7 @@ import { MapComponent } from "../mapaRota/MapComponent";
 import { PauseMenu } from "../PauseMenu/PauseMenu";
 import { GameService } from "../../api/gameService";
 import { PixelProgressBar } from "../../components/PixelProgressBar/PixelProgressBar";
-import '../../components/PixelProgressBar/PixelProgressBar.css';
+import "../../components/PixelProgressBar/PixelProgressBar.css";
 import type {
   GameObj,
   SpriteComp,
@@ -19,7 +19,7 @@ import type {
   ZComp,
   AreaComp,
   BodyComp,
-  ScaleComp
+  ScaleComp,
 } from "kaboom";
 
 // Interface para eventos vindos da API
@@ -30,7 +30,7 @@ interface EventData {
     id: number;
     nome: string;
     descricao: string;
-    tipo: 'positivo' | 'negativo';
+    tipo: "positivo" | "negativo";
     categoria: string;
     opcoes: Array<{
       id: number;
@@ -44,13 +44,12 @@ interface EventData {
 }
 
 export function GameScene() {
-
   // 🔥 PROTEÇÃO CONTRA DUPLA EXECUÇÃO E STRICTMODE
 
   // REFs DE CONTROLE DE EVENTOS
   const lastEventCheckKm = useRef(0);
   const activeGameIdRef = useRef<number | null>(null);
-  const isFinishing = useRef(false);// REF PARA STALE CLOSURE
+  const isFinishing = useRef(false); // REF PARA STALE CLOSURE
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -87,8 +86,12 @@ export function GameScene() {
   const handleResizeRef = useRef<(() => void) | null>(null);
 
   const [gameTime, setGameTime] = useState(0);
-  const [finalGameResults, setFinalGameResults] = useState<PartidaData | null>(null);
-  const [currentFuel, setCurrentFuel] = useState<number>(location.state?.selectedVehicle?.currentFuel || 0);
+  const [finalGameResults, setFinalGameResults] = useState<PartidaData | null>(
+    null
+  );
+  const [currentFuel, setCurrentFuel] = useState<number>(
+    location.state?.selectedVehicle?.currentFuel || 0
+  );
   const [totalDistance, setTotalDistance] = useState<number>(500);
 
   const [showMapModal, setShowMapModal] = useState(false);
@@ -103,8 +106,17 @@ export function GameScene() {
     }
 
     console.warn("Nenhum veículo encontrado, redirecionando...");
-    navigate('/select-vehicle');
-    return { id: 'default', name: 'Caminhão Padrão', capacity: 1000, consumption: { asphalt: 3, dirt: 2 }, image: '/assets/truck.png', maxCapacity: 100, currentFuel: 0, cost: 1000 };
+    navigate("/select-vehicle");
+    return {
+      id: "default",
+      name: "Caminhão Padrão",
+      capacity: 1000,
+      consumption: { asphalt: 3, dirt: 2 },
+      image: "/assets/truck.png",
+      maxCapacity: 100,
+      currentFuel: 0,
+      cost: 1000,
+    };
   });
 
   const [money, setMoney] = useState(() => {
@@ -124,9 +136,10 @@ export function GameScene() {
       vehicle: location.state?.selectedVehicle?.name,
       route: location.state?.selectedRoute?.name,
       hasPathCoordinates: !!location.state?.selectedRoute?.pathCoordinates,
-      pathCoordinatesLength: location.state?.selectedRoute?.pathCoordinates?.length || 0,
+      pathCoordinatesLength:
+        location.state?.selectedRoute?.pathCoordinates?.length || 0,
       money: location.state?.availableMoney,
-      savedProgress: !!location.state?.savedProgress
+      savedProgress: !!location.state?.savedProgress,
     });
   }, []);
 
@@ -137,24 +150,29 @@ export function GameScene() {
     mutationFn: (gameData: { mapa: number; rota: number; veiculo: number }) =>
       GameService.createGame(gameData),
     onSuccess: (partida) => {
-      console.log('🎮 Partida criada com sucesso no backend, ID:', partida.id);
+      console.log("🎮 Partida criada com sucesso no backend, ID:", partida.id);
 
       // ATUALIZE AMBOS, O ESTADO E A REF
-      setActiveGameId(partida.id);           // Atualiza o estado para a UI do React
-      activeGameIdRef.current = partida.id;  // Atualiza a ref para o loop do Kaboom
+      setActiveGameId(partida.id); // Atualiza o estado para a UI do React
+      activeGameIdRef.current = partida.id; // Atualiza a ref para o loop do Kaboom
 
       // Sincronizar estados do frontend com os valores iniciais do backend
       setMoney(partida.saldo);
       setCurrentFuel(partida.combustivel_atual);
 
-      console.log('💰 Estado sincronizado - Saldo:', partida.saldo, 'Combustível:', partida.combustivel_atual);
-      console.log('🔗 activeGameIdRef definido como:', activeGameIdRef.current);
+      console.log(
+        "💰 Estado sincronizado - Saldo:",
+        partida.saldo,
+        "Combustível:",
+        partida.combustivel_atual
+      );
+      console.log("🔗 activeGameIdRef definido como:", activeGameIdRef.current);
     },
     onError: (error) => {
-      console.error('❌ Erro ao criar partida:', error);
-      alert('Não foi possível iniciar o jogo. Tente novamente.');
-      navigate('/routes');
-    }
+      console.error("❌ Erro ao criar partida:", error);
+      alert("Não foi possível iniciar o jogo. Tente novamente.");
+      navigate("/routes");
+    },
   });
 
   // ============= MUTAÇÃO CORRIGIDA PARA BUSCAR EVENTOS =============
@@ -163,24 +181,31 @@ export function GameScene() {
     onSuccess: (data) => {
       // onSuccess agora só é chamado para eventos reais (HTTP 200 com dados válidos)
       if (data && data.evento) {
-        console.log('🎲 Evento recebido do backend:', data.evento.nome, '(categoria:', data.evento.categoria + ')');
+        console.log(
+          "🎲 Evento recebido do backend:",
+          data.evento.nome,
+          "(categoria:",
+          data.evento.categoria + ")"
+        );
         setActiveEvent(data);
         setShowPopup(true);
         // O jogo permanece pausado até o jogador responder
         // processingEvent.current permanece true até a resposta
       } else {
         // Caso de segurança - não deveria acontecer com a nova lógica
-        console.warn('⚠️ onSuccess chamado com dados inválidos, resetando estado');
+        console.warn(
+          "⚠️ onSuccess chamado com dados inválidos, resetando estado"
+        );
         processingEvent.current = false;
         gamePaused.current = false;
       }
     },
     onError: (error: any) => {
-      console.warn('⚠️ Erro ao buscar evento:', error);
+      console.warn("⚠️ Erro ao buscar evento:", error);
 
       // ✅ CORREÇÃO CRÍTICA: Trata 'NO_EVENT_AVAILABLE' como um caso normal
-      if (error.message === 'NO_EVENT_AVAILABLE') {
-        console.log('ℹ️ Nenhum evento desta vez (NORMAL) - continuando jogo');
+      if (error.message === "NO_EVENT_AVAILABLE") {
+        console.log("ℹ️ Nenhum evento desta vez (NORMAL) - continuando jogo");
 
         // ====== LIMPEZA COMPLETA DE ESTADO (crítico para continuar o jogo) ======
         setActiveEvent(null);
@@ -199,7 +224,7 @@ export function GameScene() {
       }
 
       // ====== TRATAMENTO DE ERROS REAIS ======
-      console.error('❌ Erro real detectado:', error.message);
+      console.error("❌ Erro real detectado:", error.message);
 
       // Limpeza padrão para todos os erros reais
       setActiveEvent(null);
@@ -210,17 +235,20 @@ export function GameScene() {
       collidedObstacle.current = null;
 
       // ✅ CORREÇÃO: Diferentes estratégias baseadas no tipo de erro
-      if (error.message === 'INVALID_REQUEST') {
-        console.warn('⚠️ Request inválido, aguardando próximo checkpoint');
+      if (error.message === "INVALID_REQUEST") {
+        console.warn("⚠️ Request inválido, aguardando próximo checkpoint");
         lastEventCheckKm.current += 10; // Pula 10km para evitar spam
-      } else if (error.message === 'SERVER_ERROR' || error.message === 'NETWORK_ERROR') {
-        console.error('💥 Erro de servidor/rede, aguardando recuperação');
+      } else if (
+        error.message === "SERVER_ERROR" ||
+        error.message === "NETWORK_ERROR"
+      ) {
+        console.error("💥 Erro de servidor/rede, aguardando recuperação");
         lastEventCheckKm.current += 30; // Pula 30km para dar tempo ao servidor
-      } else if (error.message === 'INVALID_API_RESPONSE') {
-        console.error('💥 API retornou dados inválidos');
+      } else if (error.message === "INVALID_API_RESPONSE") {
+        console.error("💥 API retornou dados inválidos");
         lastEventCheckKm.current += 15; // Pula 15km
       } else {
-        console.error('❌ Erro não categorizado:', error.message);
+        console.error("❌ Erro não categorizado:", error.message);
         lastEventCheckKm.current += 15; // Pula 15km por segurança
       }
 
@@ -231,9 +259,9 @@ export function GameScene() {
       // ✅ IMPORTANTE: Destravar sistema após tempo mais curto para erros reais
       setTimeout(() => {
         obstacleSystemLockedRef.current = false;
-        console.log('🔓 Sistema de obstáculos destravado após erro de evento');
+        console.log("🔓 Sistema de obstáculos destravado após erro de evento");
       }, 3000); // ✅ Reduzido para 3 segundos
-    }
+    },
   });
 
   // Mutação para responder ao evento
@@ -241,11 +269,11 @@ export function GameScene() {
     mutationFn: (optionId: number) => GameService.respondToEvent(optionId),
     onSuccess: (data) => {
       const updatedPartida = data.partida;
-      console.log('✅ Resposta processada pelo backend:', data.detail);
-      console.log('📊 Partida atualizada:', {
+      console.log("✅ Resposta processada pelo backend:", data.detail);
+      console.log("📊 Partida atualizada:", {
         saldo: updatedPartida.saldo,
         combustivel: updatedPartida.combustivel_atual,
-        tempo: updatedPartida.tempo_real
+        tempo: updatedPartida.tempo_real,
       });
 
       // Sincronizar estado do frontend com a resposta do backend
@@ -256,9 +284,16 @@ export function GameScene() {
       if (updatedPartida.tempo_jogo !== undefined) {
         // O backend nos envia 'tempo_jogo' em minutos.
         // Convertemos para segundos e garantimos que seja no mínimo 0.
-        const newTimeInSeconds = Math.max(0, Math.round(updatedPartida.tempo_jogo * 60));
+        const newTimeInSeconds = Math.max(
+          0,
+          Math.round(updatedPartida.tempo_jogo * 60)
+        );
         setGameTime(newTimeInSeconds);
-        console.log(`⏱️ Tempo da partida atualizado pelo servidor para: ${formatTime(newTimeInSeconds)}`);
+        console.log(
+          `⏱️ Tempo da partida atualizado pelo servidor para: ${formatTime(
+            newTimeInSeconds
+          )}`
+        );
       }
 
       // Mostrar resultado do evento
@@ -280,16 +315,16 @@ export function GameScene() {
 
       setTimeout(() => {
         obstacleSystemLockedRef.current = false;
-        console.log('🔓 Sistema de obstáculos destravado após evento');
+        console.log("🔓 Sistema de obstáculos destravado após evento");
       }, 8000);
     },
     onError: (error) => {
-      console.error('❌ Erro ao responder evento:', error);
-      alert('Erro ao processar sua resposta. O jogo continuará.');
+      console.error("❌ Erro ao responder evento:", error);
+      alert("Erro ao processar sua resposta. O jogo continuará.");
       setIsResponding(false);
       gamePaused.current = false;
       processingEvent.current = false;
-    }
+    },
   });
 
   // ============= FUNÇÕES ORIGINAIS MANTIDAS =============
@@ -299,7 +334,7 @@ export function GameScene() {
     onSuccess: (updatedPartida: PartidaData) => {
       console.log("✅ Progresso sincronizado!", updatedPartida);
 
-      if (updatedPartida.status === 'concluido') {
+      if (updatedPartida.status === "concluido") {
         console.log("🏁 PARTIDA FINALIZADA! Resultados:", updatedPartida);
         setFinalGameResults(updatedPartida);
         setGameEnded(true);
@@ -310,7 +345,7 @@ export function GameScene() {
     onError: (error) => {
       console.error("❌ Erro ao sincronizar jogo:", error);
       alert("Houve um erro ao finalizar a partida. Tente novamente.");
-    }
+    },
   });
 
   const togglePause = () => {
@@ -336,10 +371,10 @@ export function GameScene() {
       gameTime,
       // manualTimeAdjustment REMOVIDO
       timestamp: Date.now(),
-      activeGameId: activeGameIdRef.current
+      activeGameId: activeGameIdRef.current,
     };
-    localStorage.setItem('savedGameProgress', JSON.stringify(gameProgress));
-    navigate('/perfil');
+    localStorage.setItem("savedGameProgress", JSON.stringify(gameProgress));
+    navigate("/perfil");
   };
 
   const handleSaveAndPause = () => {
@@ -355,9 +390,9 @@ export function GameScene() {
       gameTime,
       // manualTimeAdjustment REMOVIDO
       timestamp: Date.now(),
-      activeGameId: activeGameIdRef.current
+      activeGameId: activeGameIdRef.current,
     };
-    localStorage.setItem('savedGameProgress', JSON.stringify(gameProgress));
+    localStorage.setItem("savedGameProgress", JSON.stringify(gameProgress));
     togglePause();
   };
 
@@ -401,7 +436,12 @@ export function GameScene() {
       (window as any).__kaboom_initiated__ = false;
     }
 
-    console.log("Inicializando jogo com veículo:", vehicle.name, "Imagem:", vehicle.image);
+    console.log(
+      "Inicializando jogo com veículo:",
+      vehicle.name,
+      "Imagem:",
+      vehicle.image
+    );
     console.log("Combustível atual no início:", currentFuel);
 
     handleResizeRef.current = () => {
@@ -415,7 +455,9 @@ export function GameScene() {
       setGameLoaded(false);
       setLoadingError(null);
 
-      const testContext = canvasRef.current!.getContext('webgl') || canvasRef.current!.getContext('experimental-webgl');
+      const testContext =
+        canvasRef.current!.getContext("webgl") ||
+        canvasRef.current!.getContext("experimental-webgl");
       if (!testContext) {
         throw new Error("WebGL não suportado neste navegador");
       }
@@ -428,7 +470,7 @@ export function GameScene() {
         crisp: true,
       });
 
-      window.addEventListener('resize', handleResizeRef.current!);
+      window.addEventListener("resize", handleResizeRef.current!);
       (window as any).__kaboom_initiated__ = true;
 
       const {
@@ -511,8 +553,6 @@ export function GameScene() {
           scale(scaleFactor),
         ]);
 
-
-
         onUpdate(() => {
           if (gamePaused.current) {
             return;
@@ -521,7 +561,10 @@ export function GameScene() {
           const deltaTime = dt();
 
           if (collisionCooldownRef.current > 0) {
-            collisionCooldownRef.current = Math.max(0, collisionCooldownRef.current - deltaTime);
+            collisionCooldownRef.current = Math.max(
+              0,
+              collisionCooldownRef.current - deltaTime
+            );
           }
 
           const moveAmount = -speed * deltaTime;
@@ -559,7 +602,8 @@ export function GameScene() {
             const updatedFuel = Math.max(0, currentFuel - fuelConsumption);
             setCurrentFuel(updatedFuel);
 
-            const newGasolinePercent = (updatedFuel / vehicle.maxCapacity) * 100;
+            const newGasolinePercent =
+              (updatedFuel / vehicle.maxCapacity) * 100;
             setGasoline(newGasolinePercent);
 
             // ✅ CORREÇÃO: Verificar game over com delay para evitar setState durante render
@@ -573,35 +617,37 @@ export function GameScene() {
           // ============= LÓGICA CORRIGIDA DE GATILHO DE EVENTOS =============
 
           // ✅ CORREÇÃO: Configurações de evento mais robustas
-          const EVENT_CHECK_INTERVAL_KM = 5 // Aumentado para dar mais espaço
+          const EVENT_CHECK_INTERVAL_KM = 5; // Aumentado para dar mais espaço
 
           // ✅ CORREÇÃO: Use progressPercent (valor atualizado) consistentemente
           const distanciaAtualKm = (progressPercent / 100) * totalDistance;
 
           // ====== VALIDAÇÕES EXTRAS PARA EVITAR REQUESTS DUPLICADOS ======
-          const canTriggerEvent = (
+          const canTriggerEvent =
             activeGameIdRef.current && // ✅ Partida deve existir no backend
             !processingEvent.current && // ✅ Não pode haver outro evento sendo processado
             !gamePaused.current && // ✅ O jogo não pode estar pausado
             !activeEvent && // ✅ Não pode haver evento ativo no estado React
             !showPopup && // ✅ Não pode haver popup sendo exibido
             !fetchNextEventMutation.isPending && // ✅ NOVA: Não pode haver request em andamento
-            distanciaAtualKm - lastEventCheckKm.current >= EVENT_CHECK_INTERVAL_KM // ✅ Distância suficiente
-          );
+            distanciaAtualKm - lastEventCheckKm.current >=
+              EVENT_CHECK_INTERVAL_KM; // ✅ Distância suficiente
 
           if (canTriggerEvent) {
             lastEventCheckKm.current = distanciaAtualKm;
 
-            console.log(`📍 Checkpoint em ${distanciaAtualKm.toFixed(2)}km. Perguntando ao backend por eventos...`);
+            console.log(
+              `📍 Checkpoint em ${distanciaAtualKm.toFixed(
+                2
+              )}km. Perguntando ao backend por eventos...`
+            );
 
             processingEvent.current = true;
             gamePaused.current = true;
             fetchNextEventMutation.mutate(distanciaAtualKm);
           }
           // ================================================================
-
         });
-
       });
 
       go("main");
@@ -619,7 +665,6 @@ export function GameScene() {
       setGameLoaded(true);
 
       console.log("✅ Jogo inicializado com sucesso!");
-
     } catch (error) {
       console.error("Erro ao inicializar o jogo:", error);
       setLoadingError(`Erro ao carregar o jogo: ${error}`);
@@ -640,19 +685,28 @@ export function GameScene() {
 
     console.log("🚀 Lógica de inicialização única está rodando...");
 
-    const { selectedVehicle, selectedRoute: route, savedProgress } = location.state || {};
+    const {
+      selectedVehicle,
+      selectedRoute: route,
+      savedProgress,
+    } = location.state || {};
 
     // Validação de dados de entrada
     if (!selectedVehicle || !route?.id || !route?.mapaId) {
-      console.error("❌ Dados insuficientes para criar partida. Redirecionando...");
+      console.error(
+        "❌ Dados insuficientes para criar partida. Redirecionando..."
+      );
       alert("Erro: Dados do veículo ou rota incompletos.");
-      navigate('/routes');
+      navigate("/routes");
       return;
     }
 
     // Se há savedProgress com activeGameId, reutiliza a partida sem criar nova
     if (savedProgress && savedProgress.activeGameId) {
-      console.log("🟢 Restaurando partida existente com ID:", savedProgress.activeGameId);
+      console.log(
+        "🟢 Restaurando partida existente com ID:",
+        savedProgress.activeGameId
+      );
       setActiveGameId(savedProgress.activeGameId);
       activeGameIdRef.current = savedProgress.activeGameId;
 
@@ -665,17 +719,23 @@ export function GameScene() {
     }
 
     // Inicia a criação da partida no backend
-    createGameMutation.mutateAsync({
-      mapa: route.mapaId,
-      rota: route.id,
-      veiculo: parseInt(selectedVehicle.id, 10) || 1
-    }).then(() => {
-      // Apenas após o sucesso da criação, inicializa o Kaboom.js,
-      // passando os dados do jogo salvo (se existirem).
-      initializeGame(savedProgress);
-    }).catch(error => {
-      console.error("❌ Falha crítica na criação da partida, não inicializando Kaboom", error);
-    });
+    createGameMutation
+      .mutateAsync({
+        mapa: route.mapaId,
+        rota: route.id,
+        veiculo: parseInt(selectedVehicle.id, 10) || 1,
+      })
+      .then(() => {
+        // Apenas após o sucesso da criação, inicializa o Kaboom.js,
+        // passando os dados do jogo salvo (se existirem).
+        initializeGame(savedProgress);
+      })
+      .catch((error) => {
+        console.error(
+          "❌ Falha crítica na criação da partida, não inicializando Kaboom",
+          error
+        );
+      });
 
     // Função de limpeza quando o componente é desmontado
     return () => {
@@ -686,7 +746,7 @@ export function GameScene() {
         (window as any).__kaboom_initiated__ = false;
       }
       if (handleResizeRef.current) {
-        window.removeEventListener('resize', handleResizeRef.current);
+        window.removeEventListener("resize", handleResizeRef.current);
       }
     };
   }, []);
@@ -694,16 +754,16 @@ export function GameScene() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         if (!activeEvent && !gameEnded) {
           togglePause();
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [activeEvent, gameEnded]);
 
@@ -728,12 +788,14 @@ export function GameScene() {
     }
 
     if (selectedRoute) {
-      const routeDistance = selectedRoute.actualDistance || selectedRoute.distance;
+      const routeDistance =
+        selectedRoute.actualDistance || selectedRoute.distance;
       setTotalDistance(routeDistance);
 
       const estimatedHours = selectedRoute.estimatedTimeHours || 7.5;
       const targetGameDurationMinutes = 3; // O jogo deve durar 3 minutos
-      gameSpeedMultiplier.current = (estimatedHours * 60) / targetGameDurationMinutes;
+      gameSpeedMultiplier.current =
+        (estimatedHours * 60) / targetGameDurationMinutes;
     }
   }, [vehicle, selectedRoute, location.state]); // Dependências corretas
 
@@ -749,7 +811,7 @@ export function GameScene() {
       console.error("ERRO: Dados do veículo incompletos!");
       console.log("Redirecionando para seleção de veículo...");
       setTimeout(() => {
-        navigate('/select-vehicle');
+        navigate("/select-vehicle");
       }, 1000);
     }
   }, []);
@@ -760,7 +822,7 @@ export function GameScene() {
     const interval = setInterval(() => {
       if (!gamePaused.current && !gameEnded && !processingEvent.current) {
         // Simplesmente adiciona 1 segundo ao estado de tempo existente
-        setGameTime(prevTime => Math.max(0, prevTime + 1));
+        setGameTime((prevTime) => Math.max(0, prevTime + 1));
       }
     }, 1000);
 
@@ -771,14 +833,15 @@ export function GameScene() {
   useEffect(() => {
     // A condição agora verifica o progresso E a trava de finalização
     if (progress >= 100 && !isFinishing.current) {
-
       // 1. Tranca a porta para impedir qualquer chamada futura.
       isFinishing.current = true;
 
       console.log("🏁 Finalizando jogo - progresso 100% (CHAMADA ÚNICA)");
 
       const tempoFinal = Math.max(0, gameTime);
-      console.log(`⏱️ Tempo enviado para sincronização: ${tempoFinal} segundos`);
+      console.log(
+        `⏱️ Tempo enviado para sincronização: ${tempoFinal} segundos`
+      );
 
       // 2. Chama a mutação. Se falhar, a trava impede que seja chamada de novo.
       syncGameMutation.mutate({ tempo_decorrido_segundos: tempoFinal });
@@ -794,10 +857,13 @@ export function GameScene() {
     // REMOVEMOS O IF QUE USAVA gameStartTime
 
     if (currentFuel <= 0) {
-      console.log("Game Over: Combustível esgotado - currentFuel:", currentFuel);
+      console.log(
+        "Game Over: Combustível esgotado - currentFuel:",
+        currentFuel
+      );
       gamePaused.current = true;
       alert("Combustível esgotado! Jogo encerrado.");
-      navigate('/routes');
+      navigate("/routes");
       return true;
     }
 
@@ -805,7 +871,7 @@ export function GameScene() {
       console.log("Game Over: Sem recursos financeiros - money:", money);
       gamePaused.current = true;
       alert("Sem recursos financeiros! Jogo encerrado.");
-      navigate('/routes');
+      navigate("/routes");
       return true;
     }
 
@@ -816,7 +882,9 @@ export function GameScene() {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleMapModalToggle = () => {
@@ -825,7 +893,10 @@ export function GameScene() {
 
   // Calcular progresso baseado nos pontos reais do caminho
   const calculatePathProgress = (deltaTime: number) => {
-    if (!selectedRoute?.pathCoordinates || selectedRoute.pathCoordinates.length < 2) {
+    if (
+      !selectedRoute?.pathCoordinates ||
+      selectedRoute.pathCoordinates.length < 2
+    ) {
       console.log("Usando fallback - sem pathCoordinates");
       return calculateFallbackProgress(deltaTime);
     }
@@ -840,13 +911,17 @@ export function GameScene() {
     pathProgressRef.current += segmentSpeed;
 
     // Atualizar currentPathIndex em tempo real
-    if (pathProgressRef.current >= 1.0 && currentPathIndexRef.current < totalSegments - 1) {
+    if (
+      pathProgressRef.current >= 1.0 &&
+      currentPathIndexRef.current < totalSegments - 1
+    ) {
       currentPathIndexRef.current += 1;
       setCurrentPathIndex(currentPathIndexRef.current);
       pathProgressRef.current = 0;
     }
 
-    const totalProgress = (currentPathIndexRef.current + pathProgressRef.current) / totalSegments;
+    const totalProgress =
+      (currentPathIndexRef.current + pathProgressRef.current) / totalSegments;
     const progressPercent = Math.min(100, Math.max(0, totalProgress * 100));
 
     return progressPercent;
@@ -862,26 +937,26 @@ export function GameScene() {
   const getVehicleImageUrl = (vehicleImage: string) => {
     console.log("Convertendo imagem do veículo:", vehicleImage);
 
-    if (vehicleImage.startsWith('/assets/')) {
+    if (vehicleImage.startsWith("/assets/")) {
       console.log("Já é uma URL pública:", vehicleImage);
       return vehicleImage;
     }
 
-    if (vehicleImage.startsWith('/src/assets/')) {
-      const fileName = vehicleImage.replace('/src/assets/', '');
+    if (vehicleImage.startsWith("/src/assets/")) {
+      const fileName = vehicleImage.replace("/src/assets/", "");
       console.log("Nome do arquivo extraído de /src/assets/:", fileName);
       return `/assets/${fileName}`;
     }
 
-    const fileName = vehicleImage.split('/').pop()?.split('?')[0];
+    const fileName = vehicleImage.split("/").pop()?.split("?")[0];
     console.log("Nome do arquivo extraído da URL:", fileName);
 
     const imageMap: { [key: string]: string } = {
-      'caminhao_medio.png': '/assets/caminhao_medio.png',
-      'caminhao_pequeno.png': '/assets/caminhao_pequeno.png',
-      'caminhonete.png': '/assets/caminhonete.png',
-      'carreta.png': '/assets/carreta.png',
-      'truck.png': '/assets/truck.png'
+      "caminhao_medio.png": "/assets/caminhao_medio.png",
+      "caminhao_pequeno.png": "/assets/caminhao_pequeno.png",
+      "caminhonete.png": "/assets/caminhonete.png",
+      "carreta.png": "/assets/carreta.png",
+      "truck.png": "/assets/truck.png",
     };
 
     if (fileName && imageMap[fileName]) {
@@ -890,13 +965,13 @@ export function GameScene() {
     }
 
     console.log("Usando fallback truck.png");
-    return '/assets/truck.png';
+    return "/assets/truck.png";
   };
 
   useEffect(() => {
     if (gameEnded) {
       console.log("Jogo finalizado. Mostrando mensagem final.");
-      localStorage.removeItem('savedGameProgress');
+      localStorage.removeItem("savedGameProgress");
       setShowEndMessage(true);
     }
   }, [gameEnded]);
@@ -905,28 +980,31 @@ export function GameScene() {
 
   return (
     <div style={{ position: "relative" }}>
-
       {/* Indicador de carregamento */}
       {!gameLoaded && !loadingError && (
-        <div style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 2000,
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-          color: "white",
-          padding: "20px",
-          borderRadius: "10px",
-          textAlign: "center",
-          fontSize: "18px"
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 2000,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            color: "white",
+            padding: "20px",
+            borderRadius: "10px",
+            textAlign: "center",
+            fontSize: "18px",
+          }}
+        >
           <div>🎮 Carregando jogo...</div>
           <div style={{ fontSize: "14px", marginTop: "10px" }}>
             Veículo: {vehicle.name}
           </div>
           {createGameMutation.isPending && (
-            <div style={{ fontSize: "12px", marginTop: "5px", color: "#00ff00" }}>
+            <div
+              style={{ fontSize: "12px", marginTop: "5px", color: "#00ff00" }}
+            >
               🔄 Criando partida no servidor...
             </div>
           )}
@@ -935,19 +1013,21 @@ export function GameScene() {
 
       {/* Indicador de erro */}
       {loadingError && (
-        <div style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 2000,
-          backgroundColor: "rgba(220, 20, 60, 0.9)",
-          color: "white",
-          padding: "20px",
-          borderRadius: "10px",
-          textAlign: "center",
-          fontSize: "16px"
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 2000,
+            backgroundColor: "rgba(220, 20, 60, 0.9)",
+            color: "white",
+            padding: "20px",
+            borderRadius: "10px",
+            textAlign: "center",
+            fontSize: "16px",
+          }}
+        >
           <div>❌ Erro ao carregar o jogo</div>
           <div style={{ fontSize: "12px", marginTop: "10px" }}>
             {loadingError}
@@ -961,7 +1041,7 @@ export function GameScene() {
               color: "red",
               border: "none",
               borderRadius: "5px",
-              cursor: "pointer"
+              cursor: "pointer",
             }}
           >
             Recarregar
@@ -970,12 +1050,14 @@ export function GameScene() {
       )}
 
       {/* Botão de pausa e salvamento */}
-      <div style={{
-        position: "fixed",
-        top: "2vh",
-        left: "2vw",
-        zIndex: 1000
-      }}>
+      <div
+        style={{
+          position: "fixed",
+          top: "2vh",
+          left: "2vw",
+          zIndex: 1000,
+        }}
+      >
         <button
           onClick={handleSaveAndPause}
           style={{
@@ -990,46 +1072,54 @@ export function GameScene() {
             boxShadow: "2px 2px 4px rgba(0,0,0,0.3)",
             transition: "all 0.2s ease",
             width: "min(6vh, 50px)",
-            height: "min(6vh, 50px)"
+            height: "min(6vh, 50px)",
           }}
           title="Pausar e Salvar Progresso"
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#FFC06F"}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#E3922A"}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.backgroundColor = "#FFC06F")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.backgroundColor = "#E3922A")
+          }
         >
           <img
             src="src/assets/pausa.png"
             alt="Pausar"
             style={{
-              width: 'min(3vh, 24px)',
-              height: 'min(3vh, 24px)'
+              width: "min(3vh, 24px)",
+              height: "min(3vh, 24px)",
             }}
           />
         </button>
       </div>
 
       {/* Barra de progresso */}
-      <div style={{
-        position: "fixed",
-        top: "2vh",
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 1000,
-      }}>
+      <div
+        style={{
+          position: "fixed",
+          top: "2vh",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 1000,
+        }}
+      >
         <PixelProgressBar progress={progress} />
       </div>
 
       {/* Container para minimapa e informações */}
-      <div style={{
-        position: "fixed",
-        top: "2vh",
-        right: "2vw",
-        zIndex: 1000,
-        display: "flex",
-        flexDirection: "column",
-        gap: "1vh",
-        alignItems: "flex-end",
-        fontFamily: "'Silkscreen', monospace"
-      }}>
+      <div
+        style={{
+          position: "fixed",
+          top: "2vh",
+          right: "2vw",
+          zIndex: 1000,
+          display: "flex",
+          flexDirection: "column",
+          gap: "1vh",
+          alignItems: "flex-end",
+          fontFamily: "'Silkscreen', monospace",
+        }}
+      >
         {/* Minimapa */}
         {selectedRoute?.pathCoordinates && (
           <div
@@ -1040,7 +1130,7 @@ export function GameScene() {
               transition: "transform 0.2s ease, box-shadow 0.2s ease",
               borderRadius: "50%",
               overflow: "hidden",
-              fontFamily: "'Silkscreen', monospace"
+              fontFamily: "'Silkscreen', monospace",
             }}
             onClick={handleMapModalToggle}
             onMouseOver={(e) => {
@@ -1063,43 +1153,60 @@ export function GameScene() {
         )}
 
         {/* Informações do jogo */}
-        <div style={{
-          padding: "min(2vh, 15px)",
-          backgroundColor: "rgba(255, 255, 255, 0.9)",
-          borderRadius: "12px",
-          width: "min(18vw, 220px)",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          fontSize: "min(2vw, 16px)",
-          fontFamily: "'Silkscreen', monospace"
-        }}>
-          <div style={{ fontSize: "16px", marginBottom: "10px", color: "#333" }}>
+        <div
+          style={{
+            padding: "min(2vh, 15px)",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            borderRadius: "12px",
+            width: "min(18vw, 220px)",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+            fontSize: "min(2vw, 16px)",
+            fontFamily: "'Silkscreen', monospace",
+          }}
+        >
+          <div
+            style={{ fontSize: "16px", marginBottom: "10px", color: "#333" }}
+          >
             💰 <strong>R$ {money.toFixed(2)}</strong>
           </div>
 
           <div style={{ marginBottom: "10px" }}>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              marginBottom: "4px"
-            }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "4px",
+              }}
+            >
               <span style={{ fontSize: "16px" }}>⛽</span>
-              <div style={{
-                height: "10px",
-                width: "120px",
-                backgroundColor: "#ddd",
-                borderRadius: "5px",
-                overflow: "hidden"
-              }}>
-                <div style={{
-                  width: `${gasoline}%`,
-                  height: "100%",
-                  backgroundColor: gasoline > 30 ? "#00cc66" : gasoline > 15 ? "#ffaa00" : "#cc3300",
-                  transition: "width 0.3s ease"
-                }}></div>
+              <div
+                style={{
+                  height: "10px",
+                  width: "120px",
+                  backgroundColor: "#ddd",
+                  borderRadius: "5px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${gasoline}%`,
+                    height: "100%",
+                    backgroundColor:
+                      gasoline > 30
+                        ? "#00cc66"
+                        : gasoline > 15
+                        ? "#ffaa00"
+                        : "#cc3300",
+                    transition: "width 0.3s ease",
+                  }}
+                ></div>
               </div>
             </div>
-            <div style={{ fontSize: "12px", color: "#666", paddingLeft: "24px" }}>
+            <div
+              style={{ fontSize: "12px", color: "#666", paddingLeft: "24px" }}
+            >
               {currentFuel.toFixed(1)}L / {vehicle.maxCapacity}L
             </div>
           </div>
@@ -1112,7 +1219,15 @@ export function GameScene() {
           </div>
 
           {selectedRoute && (
-            <div style={{ fontSize: "12px", color: "#666", marginTop: "8px", borderTop: "1px solid #eee", paddingTop: "8px" }}>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#666",
+                marginTop: "8px",
+                borderTop: "1px solid #eee",
+                paddingTop: "8px",
+              }}
+            >
               <div>{selectedRoute.name}</div>
               <div>{selectedRoute.distance} km</div>
             </div>
@@ -1120,7 +1235,14 @@ export function GameScene() {
 
           {/* Indicador de partida ativa */}
           {activeGameId && (
-            <div style={{ fontSize: "10px", color: "#0077cc", marginTop: "5px", textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: "10px",
+                color: "#0077cc",
+                marginTop: "5px",
+                textAlign: "center",
+              }}
+            >
               🎮 Partida #{activeGameId}
             </div>
           )}
@@ -1138,7 +1260,7 @@ export function GameScene() {
           position: "fixed",
           top: 0,
           left: 0,
-          zIndex: 1
+          zIndex: 1,
         }}
       />
 
@@ -1159,39 +1281,52 @@ export function GameScene() {
             maxWidth: "600px",
             zIndex: 2000,
             border: "3px solid #333",
-            fontFamily: "'Silkscreen', monospace"
+            fontFamily: "'Silkscreen', monospace",
           }}
         >
           {/* Indicador de categoria do evento */}
-          <div style={{
-            backgroundColor: activeEvent.evento.categoria === 'perigo' ? '#ff4444' :
-              activeEvent.evento.categoria === 'terreno' ? '#ff8800' : '#0077cc',
-            color: 'white',
-            padding: '5px 10px',
-            borderRadius: '20px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            marginBottom: '10px',
-            display: 'inline-block'
-          }}>
-            {activeEvent.evento.categoria === 'perigo' ? '⚠️ ZONA DE PERIGO' :
-              activeEvent.evento.categoria === 'terreno' ? '🌄 ESTRADA DE TERRA' : '🛣️ EVENTO GERAL'}
+          <div
+            style={{
+              backgroundColor:
+                activeEvent.evento.categoria === "perigo"
+                  ? "#ff4444"
+                  : activeEvent.evento.categoria === "terreno"
+                  ? "#ff8800"
+                  : "#0077cc",
+              color: "white",
+              padding: "5px 10px",
+              borderRadius: "20px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              marginBottom: "10px",
+              display: "inline-block",
+            }}
+          >
+            {activeEvent.evento.categoria === "perigo"
+              ? "⚠️ ZONA DE PERIGO"
+              : activeEvent.evento.categoria === "terreno"
+              ? "🌄 ESTRADA DE TERRA"
+              : "🛣️ EVENTO GERAL"}
           </div>
 
           {/* Texto e descrição */}
           <div className="font-[Silkscreen]" style={{ marginBottom: "10px" }}>
-            <p style={{
-              fontSize: "28px",
-              color: "#333",
-              marginBottom: "5px",
-              fontWeight: "bold"
-            }}>
+            <p
+              style={{
+                fontSize: "28px",
+                color: "#333",
+                marginBottom: "5px",
+                fontWeight: "bold",
+              }}
+            >
               {activeEvent.evento.nome}
             </p>
-            <p style={{
-              fontSize: "16px",
-              color: "#555"
-            }}>
+            <p
+              style={{
+                fontSize: "16px",
+                color: "#555",
+              }}
+            >
               {activeEvent.evento.descricao}
             </p>
           </div>
@@ -1203,7 +1338,7 @@ export function GameScene() {
               justifyContent: "center",
               gap: "20px",
               flexWrap: "wrap",
-              marginTop: "20px"
+              marginTop: "20px",
             }}
           >
             {activeEvent.evento.opcoes.map((opcao, index) => (
@@ -1224,40 +1359,44 @@ export function GameScene() {
                   textAlign: "center",
                   lineHeight: "1.4",
                   boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                  opacity: isResponding ? 0.6 : 1
+                  opacity: isResponding ? 0.6 : 1,
                 }}
                 onMouseOver={(e) => {
                   if (!isResponding) {
-                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? "#005fa3" : "#c92a2a";
+                    e.currentTarget.style.backgroundColor =
+                      index % 2 === 0 ? "#005fa3" : "#c92a2a";
                     e.currentTarget.style.transform = "scale(1.02)";
-                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.3)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 8px rgba(0,0,0,0.3)";
                   }
                 }}
                 onMouseOut={(e) => {
                   if (!isResponding) {
-                    e.currentTarget.style.backgroundColor = index % 2 === 0 ? "#0077cc" : "#e63946";
+                    e.currentTarget.style.backgroundColor =
+                      index % 2 === 0 ? "#0077cc" : "#e63946";
                     e.currentTarget.style.transform = "scale(1)";
-                    e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.2)";
+                    e.currentTarget.style.boxShadow =
+                      "0 2px 4px rgba(0,0,0,0.2)";
                   }
                 }}
               >
-                {isResponding && respondToEventMutation.isPending ? (
-                  "⏳ Processando..."
-                ) : (
-                  opcao.descricao
-                )}
+                {isResponding && respondToEventMutation.isPending
+                  ? "⏳ Processando..."
+                  : opcao.descricao}
               </button>
             ))}
           </div>
 
           {/* Indicador de processamento */}
           {isResponding && (
-            <div style={{
-              marginTop: "15px",
-              fontSize: "14px",
-              color: "#666",
-              fontStyle: "italic"
-            }}>
+            <div
+              style={{
+                marginTop: "15px",
+                fontSize: "14px",
+                color: "#666",
+                fontStyle: "italic",
+              }}
+            >
               🔄 Enviando sua escolha para o servidor...
             </div>
           )}
@@ -1270,58 +1409,123 @@ export function GameScene() {
         <div
           className="endMessage"
           style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-            border: '3px solid #000',
-            borderRadius: '15px',
-            padding: '30px',
-            textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "rgba(255, 255, 255, 0.98)",
+            border: "3px solid #000",
+            borderRadius: "15px",
+            padding: "30px",
+            textAlign: "center",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
             zIndex: 2000,
-            maxWidth: '500px',
-            width: '90%'
+            maxWidth: "500px",
+            width: "90%",
           }}
         >
           {/* Título dinâmico */}
-          <h2 style={{
-            color: finalGameResults.resultado === 'vitoria' ? "#00cc66" : "#cc3300",
-            marginBottom: "20px",
-            fontFamily: "'Silkscreen', monospace"
-          }}>
-            {finalGameResults.resultado === 'vitoria' ? '🏁 Viagem Concluída! 🏁' : '❌ Fim de Jogo ❌'}
+          <h2
+            style={{
+              color:
+                finalGameResults.resultado === "vitoria"
+                  ? "#00cc66"
+                  : "#cc3300",
+              marginBottom: "20px",
+              fontFamily: "'Silkscreen', monospace",
+            }}
+          >
+            {finalGameResults.resultado === "vitoria"
+              ? "🏁 Viagem Concluída! 🏁"
+              : "❌ Fim de Jogo ❌"}
           </h2>
 
           {/* Mensagem dinâmica */}
-          <p style={{ fontSize: "16px", marginBottom: "25px", fontWeight: "bold" }}>
+          <p
+            style={{
+              fontSize: "16px",
+              marginBottom: "25px",
+              fontWeight: "bold",
+            }}
+          >
             {finalGameResults.motivo_finalizacao}
           </p>
 
           {/* Box de resultados */}
-          <div style={{
-            backgroundColor: "#f8f9fa", padding: "20px", borderRadius: "10px",
-            marginBottom: "25px", textAlign: "left", border: "2px solid #e9ecef"
-          }}>
-            <h3 style={{ margin: "0 0 15px 0", color: "#333", textAlign: "center", fontFamily: "'Silkscreen', monospace" }}>
+          <div
+            style={{
+              backgroundColor: "#f8f9fa",
+              padding: "20px",
+              borderRadius: "10px",
+              marginBottom: "25px",
+              textAlign: "left",
+              border: "2px solid #e9ecef",
+            }}
+          >
+            <h3
+              style={{
+                margin: "0 0 15px 0",
+                color: "#333",
+                textAlign: "center",
+                fontFamily: "'Silkscreen', monospace",
+              }}
+            >
               📊 Resultados Finais
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-              <div><strong>🎯 Eficiência:</strong><br /><span style={{ fontSize: "18px", color: "#0066cc" }}>{finalGameResults.eficiencia?.toFixed(1) || '0.0'}%</span></div>
-              <div><strong>💯 Pontuação:</strong><br /><span style={{ fontSize: "18px", color: "#0066cc" }}>{finalGameResults.pontuacao} pts</span></div>
-              <div><strong>💰 Saldo Final:</strong><br /><span style={{ fontSize: "16px" }}>R$ {finalGameResults.saldo.toFixed(2)}</span></div>
-              <div><strong>📦 Carga:</strong><br /><span style={{ fontSize: "16px" }}>{finalGameResults.quantidade_carga} / {finalGameResults.quantidade_carga_inicial} un.</span></div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "10px",
+              }}
+            >
+              <div>
+                <strong>🎯 Eficiência:</strong>
+                <br />
+                <span style={{ fontSize: "18px", color: "#0066cc" }}>
+                  {finalGameResults.eficiencia?.toFixed(1) || "0.0"}%
+                </span>
+              </div>
+              <div>
+                <strong>💯 Pontuação:</strong>
+                <br />
+                <span style={{ fontSize: "18px", color: "#0066cc" }}>
+                  {finalGameResults.pontuacao} pts
+                </span>
+              </div>
+              <div>
+                <strong>💰 Saldo Final:</strong>
+                <br />
+                <span style={{ fontSize: "16px" }}>
+                  R$ {finalGameResults.saldo.toFixed(2)}
+                </span>
+              </div>
+              <div>
+                <strong>📦 Carga:</strong>
+                <br />
+                <span style={{ fontSize: "16px" }}>
+                  {finalGameResults.quantidade_carga} /{" "}
+                  {finalGameResults.quantidade_carga_inicial} un.
+                </span>
+              </div>
             </div>
             <div style={{ marginTop: "15px", textAlign: "center" }}>
-              <strong>⏱️ Tempo Total:</strong> {formatTime(finalGameResults.tempo_real * 60)}
+              <strong>⏱️ Tempo Total:</strong>{" "}
+              {formatTime(finalGameResults.tempo_real * 60)}
             </div>
           </div>
 
           {/* Botões de ação */}
-          <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "15px",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <button
-              onClick={() => navigate('/ranking')}
+              onClick={() => navigate("/ranking")}
               style={{
                 padding: "12px 24px",
                 backgroundColor: "#28a745",
@@ -1330,13 +1534,13 @@ export function GameScene() {
                 borderRadius: "8px",
                 cursor: "pointer",
                 fontSize: "14px",
-                fontWeight: "bold"
+                fontWeight: "bold",
               }}
             >
               🏆 Ver Ranking
             </button>
             <button
-              onClick={() => navigate('/game-selection')}
+              onClick={() => navigate("/game-selection")}
               style={{
                 padding: "12px 24px",
                 backgroundColor: "#0077cc",
@@ -1345,13 +1549,13 @@ export function GameScene() {
                 borderRadius: "8px",
                 cursor: "pointer",
                 fontSize: "14px",
-                fontWeight: "bold"
+                fontWeight: "bold",
               }}
             >
               🚚 Nova Viagem
             </button>
             <button
-              onClick={() => navigate('/perfil')}
+              onClick={() => navigate("/perfil")}
               style={{
                 padding: "12px 24px",
                 backgroundColor: "#6c757d",
@@ -1359,7 +1563,7 @@ export function GameScene() {
                 border: "none",
                 borderRadius: "8px",
                 cursor: "pointer",
-                fontSize: "14px"
+                fontSize: "14px",
               }}
             >
               👤 Perfil
@@ -1370,27 +1574,33 @@ export function GameScene() {
 
       {/* Overlay de carregamento durante finalização */}
       {syncGameMutation.isPending && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1999
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '20px',
-            borderRadius: '10px',
-            textAlign: 'center',
-            border: '2px solid #000'
-          }}>
-            <div style={{ marginBottom: '10px', fontSize: '24px' }}>⏳</div>
-            <p style={{ margin: 0, fontSize: '16px' }}>Finalizando partida...</p>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1999,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "10px",
+              textAlign: "center",
+              border: "2px solid #000",
+            }}
+          >
+            <div style={{ marginBottom: "10px", fontSize: "24px" }}>⏳</div>
+            <p style={{ margin: 0, fontSize: "16px" }}>
+              Finalizando partida...
+            </p>
           </div>
         </div>
       )}
@@ -1409,7 +1619,7 @@ export function GameScene() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            padding: "20px"
+            padding: "20px",
           }}
           onClick={handleMapModalToggle}
         >
@@ -1421,33 +1631,33 @@ export function GameScene() {
               borderRadius: "10px",
               overflow: "hidden",
               position: "relative",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.5)"
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 left: 0,
-                width: '100%',
-                padding: '15px',
-                display: 'flex',
-                justifyContent: 'space-between', // Alinha itens nas extremidades
-                alignItems: 'center',             // Alinha itens verticalmente
-                boxSizing: 'border-box',          // Garante que o padding não quebre o layout
-                zIndex: 9999,                     // Mantém o cabeçalho na frente
+                width: "100%",
+                padding: "15px",
+                display: "flex",
+                justifyContent: "space-between", // Alinha itens nas extremidades
+                alignItems: "center", // Alinha itens verticalmente
+                boxSizing: "border-box", // Garante que o padding não quebre o layout
+                zIndex: 9999, // Mantém o cabeçalho na frente
               }}
             >
               <div
                 style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                  color: 'white',
-                  padding: '10px 15px',
-                  borderRadius: '5px',
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  color: "white",
+                  padding: "10px 15px",
+                  borderRadius: "5px",
                   fontFamily: '"Silkscreen", monospace',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
+                  fontSize: "16px",
+                  fontWeight: "bold",
                 }}
               >
                 🗺️ {selectedRoute.name}
@@ -1455,21 +1665,21 @@ export function GameScene() {
               <button
                 onClick={handleMapModalToggle}
                 style={{
-                  backgroundColor: '#e63946',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '50%',
-                  height: '45px',
-                  width: '25px',
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                  backgroundColor: "#e63946",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "50%",
+                  height: "45px",
+                  width: "25px",
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
                   flexShrink: 0,
-                  marginLeft: '15px',
+                  marginLeft: "15px",
                 }}
                 title="Fechar mapa"
               >
@@ -1486,7 +1696,7 @@ export function GameScene() {
                 externalProgress={{
                   currentPathIndex: currentPathIndexRef.current,
                   pathProgress: pathProgressRef.current,
-                  totalProgress: progress
+                  totalProgress: progress,
                 }}
               />
             </div>

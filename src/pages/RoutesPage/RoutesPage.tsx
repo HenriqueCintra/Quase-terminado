@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
-import { GameService } from '../../api/gameService';
-import { MapComponent } from '../mapaRota/MapComponent';
-import { routes as staticRoutesData } from '../mapaRota/routesData';
+import React, { useState, useMemo } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft } from "lucide-react";
+import { GameService } from "../../api/gameService";
+import { MapComponent } from "../mapaRota/MapComponent";
+import { routes as staticRoutesData } from "../mapaRota/routesData";
 
 interface ApiRoute {
   id: number;
@@ -23,7 +23,7 @@ interface ApiRoute {
   estimatedTime: string;
   estimatedTimeHours: number;
   dirtRoad: boolean;
-  safety: { robberyRisk: 'Baixo' | 'Médio' | 'Alto'; };
+  safety: { robberyRisk: "Baixo" | "Médio" | "Alto" };
   tollBooths: any[];
   speedLimits: any[];
   roadConditions: string;
@@ -39,22 +39,33 @@ export const RoutesPage: React.FC = () => {
   const navigate = useNavigate();
 
   const vehicle = location.state?.selectedVehicle || {
-    id: 'carreta', name: 'Carreta', capacity: 60,
+    id: "carreta",
+    name: "Carreta",
+    capacity: 60,
     consumption: { asphalt: 2, dirt: 1.5 },
-    image: '/carreta.png', maxCapacity: 495, currentFuel: 0, cost: 4500
+    image: "/carreta.png",
+    maxCapacity: 495,
+    currentFuel: 0,
+    cost: 4500,
   };
   const availableMoney = location.state?.availableMoney || 5500;
 
   const [selectedRoute, setSelectedRoute] = useState<ApiRoute | null>(null);
 
   // ✅ CORREÇÃO: Configuração de cache balanceada (sem loop infinito)
-  const { data: mapsData, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['maps'], // ✅ CORRIGIDO: QueryKey estável
+  const {
+    data: mapsData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["maps"], // ✅ CORRIGIDO: QueryKey estável
     queryFn: GameService.getMaps,
     retry: 3,
     staleTime: 30 * 1000, // ✅ 30 segundos - dados frescos mas não excessivo
     cacheTime: 5 * 60 * 1000, // ✅ 5 minutos no cache
-    refetchOnMount: 'always', // ✅ Sempre refetch na montagem
+    refetchOnMount: "always", // ✅ Sempre refetch na montagem
     refetchOnWindowFocus: false, // Evita refetch desnecessário
   });
 
@@ -62,39 +73,59 @@ export const RoutesPage: React.FC = () => {
   const allRoutes = useMemo(() => {
     if (!mapsData) return [];
 
-    console.log("🗺️ Processando dados dos mapas:", mapsData.length, "mapas encontrados");
-    console.log("📍 Rotas estáticas disponíveis:", staticRoutesData.map(r => r.name));
+    console.log(
+      "🗺️ Processando dados dos mapas:",
+      mapsData.length,
+      "mapas encontrados"
+    );
+    console.log(
+      "📍 Rotas estáticas disponíveis:",
+      staticRoutesData.map((r) => r.name)
+    );
 
     // Focar apenas no mapa principal de entregas
     const mapaPrincipal = mapsData[0];
     if (!mapaPrincipal) {
       console.warn("⚠️ Mapa principal 'ENTREGA EFICIENTE' não encontrado");
-      console.log("🔍 Mapas disponíveis:", mapsData.map(m => `"${m.nome}" (ID: ${m.id})`));
+      console.log(
+        "🔍 Mapas disponíveis:",
+        mapsData.map((m) => `"${m.nome}" (ID: ${m.id})`)
+      );
       return [];
     }
 
-    console.log(`✅ Mapa principal encontrado: "${mapaPrincipal.nome}" (ID: ${mapaPrincipal.id})`);
+    console.log(
+      `✅ Mapa principal encontrado: "${mapaPrincipal.nome}" (ID: ${mapaPrincipal.id})`
+    );
     console.log(`📍 Rotas do mapa: ${mapaPrincipal.rotas.length}`);
 
-    return mapaPrincipal.rotas.map(apiRoute => {
+    return mapaPrincipal.rotas.map((apiRoute) => {
       // 🎯 CORREÇÃO CRÍTICA: Correspondência pelo NOME
-      const staticRoute = staticRoutesData.find(
-        staticR => {
-          // Normalizar os nomes removendo espaços extras e comparando
-          const staticName = staticR.name.trim().toLowerCase();
-          const apiName = apiRoute.nome.trim().toLowerCase();
+      const staticRoute = staticRoutesData.find((staticR) => {
+        // Normalizar os nomes removendo espaços extras e comparando
+        const staticName = staticR.name.trim().toLowerCase();
+        const apiName = apiRoute.nome.trim().toLowerCase();
 
-          // Log para debug
-          console.log(`🔍 Comparando: "${staticName}" com "${apiName}"`);
+        // Log para debug
+        console.log(`🔍 Comparando: "${staticName}" com "${apiName}"`);
 
-          return staticName === apiName || staticName.includes(apiName) || apiName.includes(staticName);
-        }
-      );
+        return (
+          staticName === apiName ||
+          staticName.includes(apiName) ||
+          apiName.includes(staticName)
+        );
+      });
 
       if (!staticRoute) {
-        console.warn(`⚠️ Rota estática NÃO encontrada para: "${apiRoute.nome}" (ID: ${apiRoute.id})`);
+        console.warn(
+          `⚠️ Rota estática NÃO encontrada para: "${apiRoute.nome}" (ID: ${apiRoute.id})`
+        );
       } else {
-        console.log(`✅ Rota mapeada com sucesso: "${apiRoute.nome}" -> ${staticRoute.pathCoordinates?.length || 0} coordenadas`);
+        console.log(
+          `✅ Rota mapeada com sucesso: "${apiRoute.nome}" -> ${
+            staticRoute.pathCoordinates?.length || 0
+          } coordenadas`
+        );
       }
 
       const mappedRoute: ApiRoute = {
@@ -103,12 +134,20 @@ export const RoutesPage: React.FC = () => {
         routeId: apiRoute.id,
         name: apiRoute.nome,
         distance: apiRoute.distancia_km,
-        estimatedTime: `${Math.floor(apiRoute.tempo_estimado_horas)}h${Math.round((apiRoute.tempo_estimado_horas % 1) * 60)}min`,
+        estimatedTime: `${Math.floor(
+          apiRoute.tempo_estimado_horas
+        )}h${Math.round((apiRoute.tempo_estimado_horas % 1) * 60)}min`,
         estimatedTimeHours: apiRoute.tempo_estimado_horas,
-        dirtRoad: apiRoute.tipo_estrada.includes('terra') || apiRoute.dirt_segments_data.length > 0,
+        dirtRoad:
+          apiRoute.tipo_estrada.includes("terra") ||
+          apiRoute.dirt_segments_data.length > 0,
         safety: {
-          robberyRisk: apiRoute.danger_zones_data.length > 2 ? 'Alto' :
-            apiRoute.danger_zones_data.length > 0 ? 'Médio' : 'Baixo'
+          robberyRisk:
+            apiRoute.danger_zones_data.length > 2
+              ? "Alto"
+              : apiRoute.danger_zones_data.length > 0
+              ? "Médio"
+              : "Baixo",
         },
         // 🎯 DADOS CRÍTICOS DO MAPA - VINDOS DA ROTA ESTÁTICA
         pathCoordinates: staticRoute?.pathCoordinates || undefined,
@@ -117,8 +156,11 @@ export const RoutesPage: React.FC = () => {
         dangerZones: staticRoute?.dangerZones || [],
         dirtSegments: staticRoute?.dirtSegments || [],
         actualDistance: staticRoute?.actualDistance || apiRoute.distancia_km,
-        actualDuration: staticRoute?.actualDuration || (apiRoute.tempo_estimado_horas * 3600),
-        roadConditions: apiRoute.tipo_estrada.includes('boa') ? 'Boa' : 'Regular',
+        actualDuration:
+          staticRoute?.actualDuration || apiRoute.tempo_estimado_horas * 3600,
+        roadConditions: apiRoute.tipo_estrada.includes("boa")
+          ? "Boa"
+          : "Regular",
       };
 
       return mappedRoute;
@@ -126,17 +168,20 @@ export const RoutesPage: React.FC = () => {
   }, [mapsData]);
 
   const handleSelectRoute = (routeId: number) => {
-    const routeToSelect = allRoutes.find(r => r.id === routeId);
+    const routeToSelect = allRoutes.find((r) => r.id === routeId);
     if (routeToSelect) {
       console.log("🗺️ Rota selecionada:", routeToSelect.name);
-      console.log("📍 PathCoordinates disponíveis:", !!routeToSelect.pathCoordinates);
+      console.log(
+        "📍 PathCoordinates disponíveis:",
+        !!routeToSelect.pathCoordinates
+      );
       console.log("📊 Dados completos da rota:", {
         id: routeToSelect.id,
         nome: routeToSelect.name,
         pathCoordinates: routeToSelect.pathCoordinates?.length || 0,
         dirtSegments: routeToSelect.dirtSegments?.length || 0,
         tollBooths: routeToSelect.tollBooths?.length || 0,
-        dangerZones: routeToSelect.dangerZones?.length || 0
+        dangerZones: routeToSelect.dangerZones?.length || 0,
       });
       setSelectedRoute(routeToSelect);
     }
@@ -145,9 +190,14 @@ export const RoutesPage: React.FC = () => {
   const handleContinue = () => {
     if (selectedRoute) {
       // VALIDAÇÃO CRÍTICA: Verificar se temos pathCoordinates
-      if (!selectedRoute.pathCoordinates || selectedRoute.pathCoordinates.length === 0) {
+      if (
+        !selectedRoute.pathCoordinates ||
+        selectedRoute.pathCoordinates.length === 0
+      ) {
         console.error("❌ Rota sem coordenadas! Dados da rota:", selectedRoute);
-        alert("Erro: Esta rota não possui dados de mapa. Por favor, escolha outra rota.");
+        alert(
+          "Erro: Esta rota não possui dados de mapa. Por favor, escolha outra rota."
+        );
         return;
       }
 
@@ -161,27 +211,27 @@ export const RoutesPage: React.FC = () => {
           routeId: selectedRoute.routeId,
           mapaId: selectedRoute.mapaId,
           name: selectedRoute.name,
-          pathCoordinatesLength: selectedRoute.pathCoordinates.length
-        }
+          pathCoordinatesLength: selectedRoute.pathCoordinates.length,
+        },
       });
 
       // Garantir que TODOS os dados necessários sejam passados
-      navigate('/fuel', {
+      navigate("/fuel", {
         state: {
           vehicle,
           availableMoney,
           selectedRoute: {
             ...selectedRoute,
             // Garantir explicitamente que pathCoordinates seja incluído
-            pathCoordinates: selectedRoute.pathCoordinates
-          }
-        }
+            pathCoordinates: selectedRoute.pathCoordinates,
+          },
+        },
       });
     }
   };
 
   const goBack = () => {
-    navigate('/select-vehicle');
+    navigate("/select-vehicle");
   };
 
   // ✅ CORREÇÃO: Melhor tratamento de estados de loading/erro
@@ -189,8 +239,12 @@ export const RoutesPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#200259] font-['Silkscreen'] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-[#E3922A] text-2xl mb-4">🚛 Carregando rotas...</div>
-          <div className="text-white">Buscando dados atualizados do servidor</div>
+          <div className="text-[#E3922A] text-2xl mb-4">
+            🚛 Carregando rotas...
+          </div>
+          <div className="text-white">
+            Buscando dados atualizados do servidor
+          </div>
           <button
             onClick={() => refetch()}
             className="mt-4 bg-[#E3922A] text-black font-bold px-4 py-2 rounded-md hover:bg-[#FFC06F]"
@@ -206,9 +260,11 @@ export const RoutesPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#200259] font-['Silkscreen'] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 text-2xl mb-4">❌ Erro ao carregar rotas</div>
+          <div className="text-red-500 text-2xl mb-4">
+            ❌ Erro ao carregar rotas
+          </div>
           <div className="text-white mb-4">
-            {error instanceof Error ? error.message : 'Erro desconhecido'}
+            {error instanceof Error ? error.message : "Erro desconhecido"}
           </div>
           <div className="flex gap-2 justify-center">
             <button
@@ -218,7 +274,7 @@ export const RoutesPage: React.FC = () => {
               🔄 Recarregar Dados
             </button>
             <button
-              onClick={() => navigate('/select-vehicle')}
+              onClick={() => navigate("/select-vehicle")}
               className="bg-gray-600 text-white font-bold px-6 py-3 rounded-md hover:bg-gray-700"
             >
               ← Voltar
@@ -254,7 +310,6 @@ export const RoutesPage: React.FC = () => {
 
       {/* Conteúdo principal */}
       <div className="flex flex-col lg:flex-row gap-3 p-3 h-[calc(100vh-60px)] max-h-[calc(100vh-60px)] overflow-hidden">
-
         {/* 🗺️ MAPA */}
         <div className="lg:w-2/3 h-full lg:h-full flex flex-col min-h-[300px] lg:min-h-0">
           <div className="flex-1 min-h-0 overflow-hidden rounded-lg border-2 border-gray-300">
@@ -273,8 +328,12 @@ export const RoutesPage: React.FC = () => {
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
                 <div className="text-center text-gray-600 font-['Silkscreen'] p-4">
                   <div className="text-4xl mb-3">🗺️</div>
-                  <p className="text-lg font-bold mb-1 text-gray-700">Selecione uma rota</p>
-                  <p className="text-sm text-gray-500">para visualizar no mapa</p>
+                  <p className="text-lg font-bold mb-1 text-gray-700">
+                    Selecione uma rota
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    para visualizar no mapa
+                  </p>
                 </div>
               </div>
             )}
@@ -306,9 +365,11 @@ export const RoutesPage: React.FC = () => {
                 <div
                   key={route.id}
                   className={`p-2 rounded-lg cursor-pointer transition-all duration-200 border-2
-                    ${selectedRoute?.id === route.id
-                      ? 'bg-yellow-300 border-yellow-600 shadow-lg'
-                      : 'bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400'}
+                    ${
+                      selectedRoute?.id === route.id
+                        ? "bg-yellow-300 border-yellow-600 shadow-lg"
+                        : "bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                    }
                     `}
                   onClick={() => handleSelectRoute(route.id)}
                 >
@@ -322,27 +383,39 @@ export const RoutesPage: React.FC = () => {
                         <span>⏱️ TEMPO:</span> {route.estimatedTime}
                       </p>
                       <p className="font-['Silkscreen'] text-black text-xs">
-                        <span>📏 DISTÂNCIA:</span> {route.distance.toFixed(0)} km
+                        <span>📏 DISTÂNCIA:</span> {route.distance.toFixed(0)}{" "}
+                        km
                       </p>
                     </div>
 
                     <div className="space-y-0.5">
                       <p className="font-['Silkscreen'] text-black text-xs flex items-center">
                         <span>🛡️ RISCO:</span>
-                        <span className={`${route.safety.robberyRisk === 'Baixo' ? 'text-green-700' : 'text-red-700'} ml-1`}>
-                          {route.safety.robberyRisk} {route.safety.robberyRisk === 'Baixo' ? '✅' : '⚠️'}
+                        <span
+                          className={`${
+                            route.safety.robberyRisk === "Baixo"
+                              ? "text-green-700"
+                              : "text-red-700"
+                          } ml-1`}
+                        >
+                          {route.safety.robberyRisk}{" "}
+                          {route.safety.robberyRisk === "Baixo" ? "✅" : "⚠️"}
                         </span>
                       </p>
                       {route.dirtRoad && (
                         <p className="font-['Silkscreen'] text-black text-xs flex items-center">
                           <span>🛤️ TERRENO:</span>
-                          <span className="text-yellow-700 ml-1">Estrada de Terra</span>
+                          <span className="text-yellow-700 ml-1">
+                            Estrada de Terra
+                          </span>
                         </p>
                       )}
                       {/* 🔍 INDICADOR DE MAPA */}
-                      {route.pathCoordinates && route.pathCoordinates.length > 0 ? (
+                      {route.pathCoordinates &&
+                      route.pathCoordinates.length > 0 ? (
                         <p className="font-['Silkscreen'] text-green-600 text-xs">
-                          🗺️ Mapa disponível ({route.pathCoordinates.length} pontos)
+                          🗺️ Mapa disponível ({route.pathCoordinates.length}{" "}
+                          pontos)
                         </p>
                       ) : (
                         <p className="font-['Silkscreen'] text-red-600 text-xs">
@@ -354,7 +427,9 @@ export const RoutesPage: React.FC = () => {
 
                   {selectedRoute?.id === route.id && (
                     <div className="mt-2 p-2 bg-blue-50 border-l-4 border-blue-400 rounded-r-md">
-                      <h4 className="font-bold text-blue-800 mb-1 text-xs">📋 DETALHES:</h4>
+                      <h4 className="font-bold text-blue-800 mb-1 text-xs">
+                        📋 DETALHES:
+                      </h4>
                       <div className="grid grid-cols-2 gap-1 text-xs text-blue-700">
                         <p>🗺️ Mapa: {route.mapaId}</p>
                         <p>🆔 Rota: {route.id}</p>
@@ -367,16 +442,22 @@ export const RoutesPage: React.FC = () => {
                         <p>🚦 Velocidade: {route.velocidade_media_kmh} km/h</p>
                         <p>🛣️ Tipo: {route.tipo_estrada}</p>
                         {route.pathCoordinates ? (
-                          <p className="text-green-700">📍 Coordenadas: {route.pathCoordinates.length} pontos</p>
+                          <p className="text-green-700">
+                            📍 Coordenadas: {route.pathCoordinates.length}{" "}
+                            pontos
+                          </p>
                         ) : (
                           <p className="text-red-700">📍 Sem coordenadas!</p>
                         )}
-                        {route.dirtSegments && route.dirtSegments.length > 0 && (
-                          <p>🏜️ Trechos terra: {route.dirtSegments.length}</p>
-                        )}
+                        {route.dirtSegments &&
+                          route.dirtSegments.length > 0 && (
+                            <p>🏜️ Trechos terra: {route.dirtSegments.length}</p>
+                          )}
                       </div>
                       {route.descricao && (
-                        <p className="text-xs text-gray-600 mt-1 italic">{route.descricao}</p>
+                        <p className="text-xs text-gray-600 mt-1 italic">
+                          {route.descricao}
+                        </p>
                       )}
                     </div>
                   )}

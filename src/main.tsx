@@ -24,6 +24,7 @@ import { ApresentacaoDesafioPage } from "./pages/Desafio/ApresentacaoDesafio.tsx
 import { RankingPage } from "./pages/Ranking/RankingPage.tsx";
 import { ChooseTeam } from "./pages/ChooseTeam/ChooseTeam.tsx";
 import { RefuelScreen, MinigameScreen } from "./pages/RefuelScreen/index.ts"; // Importa as novas páginas
+import { RoutesPage } from "./pages/RoutesPage/RoutesPage.tsx";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -52,7 +53,7 @@ createRoot(document.getElementById("app") as HTMLElement).render(
 
               {/* ROTAS DO JOGO DE ABASTECIMENTO */}
               <Route
-                path="/refuel"
+                path="/fuel"
                 element={
                   <ProtectedRoute>
                     <RefuelScreen />
@@ -170,6 +171,14 @@ createRoot(document.getElementById("app") as HTMLElement).render(
                 element={
                   <ProtectedRoute>
                     <GameSelectionPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/routes"
+                element={
+                  <ProtectedRoute>
+                    <RoutesPage />
                   </ProtectedRoute>
                 }
               />
