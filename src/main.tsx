@@ -69,6 +69,16 @@ createRoot(document.getElementById("app") as HTMLElement).render(
                 }
               />
 
+              {/* Rota para a nova tela de abastecimento */}
+              <Route
+                path="/refuel"
+                element={
+                  <ProtectedRoute>
+                    <RefuelScreen />
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Rotas protegidas existentes */}
               <Route
                 path="/perfil"

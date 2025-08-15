@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
+import { useGame } from "../../contexts/GameContext";
 import { GameService } from "../../api/gameService";
 import { MapComponent } from "../mapaRota/MapComponent";
 import { routes as staticRoutesData } from "../mapaRota/routesData";
@@ -35,22 +36,41 @@ interface ApiRoute {
 }
 
 export const RoutesPage: React.FC = () => {
-  const location = useLocation();
   const navigate = useNavigate();
+  const { 
+    vehicle, 
+    playerBalance, 
+    selectedRoute,
+    setSelectedRouteDetails 
+  } = useGame();
 
-  const vehicle = location.state?.selectedVehicle || {
-    id: "carreta",
-    name: "Carreta",
-    capacity: 60,
-    consumption: { asphalt: 2, dirt: 1.5 },
-    image: "/carreta.png",
-    maxCapacity: 495,
-    currentFuel: 0,
-    cost: 4500,
-  };
-  const availableMoney = location.state?.availableMoney || 5500;
+  // Verificar se temos dados necessários
+  React.useEffect(() => {
+    if (!selectedRoute) {
+      console.error("Nenhuma rota selecionada. Redirecionando para tela de desafio.");
+      navigate("/desafio");
+      return;
+    }
+    
+    if (!vehicle) {
+      console.error("Nenhum veículo selecionado. Redirecionando para seleção de veículo.");
+      navigate("/select-vehicle");
+      return;
+    }
+  }, [selectedRoute, vehicle, navigate]);
 
-  const [selectedRoute, setSelectedRoute] = useState<ApiRoute | null>(null);
+  // Se não temos dados, mostrar carregamento
+  if (!vehicle || !selectedRoute) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#200259] text-white font-['Silkscreen'] text-xl">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          Carregando dados do jogo...
+        </div>
+      </div>
+    );
+  }
+  const [selectedRouteDetails, setSelectedRouteDetailsLocal] = useState<ApiRoute | null>(null);
 
   // ✅ CORREÇÃO: Configuração de cache balanceada (sem loop infinito)
   const {
@@ -183,18 +203,21 @@ export const RoutesPage: React.FC = () => {
         tollBooths: routeToSelect.tollBooths?.length || 0,
         dangerZones: routeToSelect.dangerZones?.length || 0,
       });
-      setSelectedRoute(routeToSelect);
+      setSelectedRouteDetailsLocal(routeToSelect);
+      
+      // Salvar também no contexto global
+      setSelectedRouteDetails(routeToSelect);
     }
   };
 
   const handleContinue = () => {
-    if (selectedRoute) {
+    if (selectedRouteDetails) {
       // VALIDAÇÃO CRÍTICA: Verificar se temos pathCoordinates
       if (
-        !selectedRoute.pathCoordinates ||
-        selectedRoute.pathCoordinates.length === 0
+        !selectedRouteDetails.pathCoordinates ||
+        selectedRouteDetails.pathCoordinates.length === 0
       ) {
-        console.error("❌ Rota sem coordenadas! Dados da rota:", selectedRoute);
+        console.error("❌ Rota sem coordenadas! Dados da rota:", selectedRouteDetails);
         alert(
           "Erro: Esta rota não possui dados de mapa. Por favor, escolha outra rota."
         );
@@ -202,31 +225,21 @@ export const RoutesPage: React.FC = () => {
       }
 
       // ✅ CORREÇÃO: Logs detalhados antes de navegar
-      console.log("✅ Continuando com a rota:", selectedRoute.name);
+      console.log("✅ Continuando com a rota:", selectedRouteDetails.name);
       console.log("📋 Dados completos enviados:", {
         vehicle: vehicle.name,
-        money: availableMoney,
+        money: playerBalance,
         route: {
-          id: selectedRoute.id,
-          routeId: selectedRoute.routeId,
-          mapaId: selectedRoute.mapaId,
-          name: selectedRoute.name,
-          pathCoordinatesLength: selectedRoute.pathCoordinates.length,
+          id: selectedRouteDetails.id,
+          routeId: selectedRouteDetails.routeId,
+          mapaId: selectedRouteDetails.mapaId,
+          name: selectedRouteDetails.name,
+          pathCoordinatesLength: selectedRouteDetails.pathCoordinates.length,
         },
       });
 
-      // Garantir que TODOS os dados necessários sejam passados
-      navigate("/fuel", {
-        state: {
-          vehicle,
-          availableMoney,
-          selectedRoute: {
-            ...selectedRoute,
-            // Garantir explicitamente que pathCoordinates seja incluído
-            pathCoordinates: selectedRoute.pathCoordinates,
-          },
-        },
-      });
+      // Navegar para abastecimento - dados estão no contexto
+      navigate("/fuel");
     }
   };
 
@@ -317,9 +330,9 @@ export const RoutesPage: React.FC = () => {
               <div className="w-full h-full max-h-full overflow-hidden">
                 <div className="w-full h-full">
                   <MapComponent
-                    preSelectedRoute={selectedRoute}
+                    preSelectedRoute={selectedRouteDetails}
                     preSelectedVehicle={vehicle}
-                    preAvailableMoney={availableMoney}
+                    preAvailableMoney={playerBalance}
                     showControls={false}
                   />
                 </div>
@@ -366,7 +379,7 @@ export const RoutesPage: React.FC = () => {
                   key={route.id}
                   className={`p-2 rounded-lg cursor-pointer transition-all duration-200 border-2
                     ${
-                      selectedRoute?.id === route.id
+                      selectedRouteDetails?.id === route.id
                         ? "bg-yellow-300 border-yellow-600 shadow-lg"
                         : "bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400"
                     }
@@ -425,7 +438,7 @@ export const RoutesPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {selectedRoute?.id === route.id && (
+                  {selectedRouteDetails?.id === route.id && (
                     <div className="mt-2 p-2 bg-blue-50 border-l-4 border-blue-400 rounded-r-md">
                       <h4 className="font-bold text-blue-800 mb-1 text-xs">
                         📋 DETALHES:
@@ -467,7 +480,7 @@ export const RoutesPage: React.FC = () => {
           </div>
 
           <div className="bg-[#E3922A] border-2 border-black rounded-b-lg p-2 flex-shrink-0">
-            {selectedRoute ? (
+            {selectedRouteDetails ? (
               <button
                 onClick={handleContinue}
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 text-sm rounded-md 

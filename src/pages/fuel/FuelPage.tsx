@@ -1,27 +1,57 @@
 import React, { useState } from 'react';
 import { Vehicle } from '../../types/vehicle';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useGame } from '../../contexts/GameContext';
 
 export const FuelPage: React.FC = () => {
-  const location = useLocation();
   const navigate = useNavigate();
+  const { 
+    vehicle: contextVehicle, 
+    selectedRoute: contextSelectedRoute, 
+    playerBalance: contextPlayerBalance,
+    setPlayerBalance,
+    updateVehicleFuel
+  } = useGame();
 
-  // Dados recebidos da tela anterior
-  const receivedVehicle = location.state?.selectedVehicle || location.state?.vehicle || { id: 'carreta', name: 'Carreta', capacity: 60, consumption: { asphalt: 2, dirt: 1.5 }, image: '/carreta.png', maxCapacity: 495, currentFuel: 0, cost: 4500 };
+  // Verificar se temos todos os dados necessários
+  React.useEffect(() => {
+    if (!contextSelectedRoute) {
+      console.error("Nenhuma rota selecionada. Redirecionando para tela de desafio.");
+      navigate("/desafio");
+      return;
+    }
+    
+    if (!contextVehicle) {
+      console.error("Nenhum veículo selecionado. Redirecionando para seleção de veículo.");
+      navigate("/select-vehicle");
+      return;
+    }
+  }, [contextSelectedRoute, contextVehicle, navigate]);
+
+  // Se não temos dados, mostrar carregamento
+  if (!contextVehicle || !contextSelectedRoute) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#200259] text-white font-['Silkscreen'] text-xl">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          Carregando dados do jogo...
+        </div>
+      </div>
+    );
+  }
 
   // Garantir que o veículo sempre comece com tanque vazio na página de combustível
   const vehicle = {
-    ...receivedVehicle,
+    ...contextVehicle,
     currentFuel: 0 // Tanque sempre vazio para forçar decisão do usuário
   };
 
-  const availableMoney = location.state?.availableMoney || 5500;
-  const selectedRoute = location.state?.selectedRoute;
+  const availableMoney = contextPlayerBalance;
+  const selectedRoute = contextSelectedRoute;
 
   // Debug dos dados recebidos
   console.log("=== DEBUG FUEL PAGE ===");
-  console.log("Location state:", location.state);
   console.log("Vehicle received:", vehicle);
   console.log("Available money:", availableMoney);
   console.log("Selected route:", selectedRoute);
@@ -60,40 +90,25 @@ export const FuelPage: React.FC = () => {
     if (cost <= availableBalance) {
       // Calcular o novo combustível baseado na opção selecionada
       const newCurrentFuel = fuelAmount === 'full'
-        ? selectedVehicle.maxCapacity
+        ? vehicle.maxCapacity
         : fuelAmount === 'half'
-          ? selectedVehicle.maxCapacity / 2
-          : selectedVehicle.maxCapacity / 4;
+          ? vehicle.maxCapacity / 2
+          : vehicle.maxCapacity / 4;
 
-      const updatedVehicle = {
-        ...selectedVehicle,
-        currentFuel: newCurrentFuel
-      };
+      // Atualizar dados no contexto
+      updateVehicleFuel(newCurrentFuel);
+      setPlayerBalance(availableMoney - cost);
 
-      const newBalance = availableMoney - cost;
-
-      // ATUALIZADO: Passar dados completos incluindo selectedRoute para a GameScene
-      navigate('/game', {
-        state: {
-          selectedVehicle: updatedVehicle,
-          availableMoney: newBalance,
-          selectedRoute: selectedRoute  // GARANTIR QUE ESTE DADO SEJA PASSADO
-        }
-      });
+      // Navegar para o mapa - dados estão no contexto
+      navigate('/mapa-rota');
     } else {
       alert('Saldo insuficiente para abastecer!');
     }
   };
 
   const handleSkipFuel = () => {
-    // ATUALIZADO: Navegar para o jogo 2D sem abastecer, mas passando dados completos
-    navigate('/game', {
-      state: {
-        selectedVehicle: selectedVehicle,
-        availableMoney: availableBalance,
-        selectedRoute: selectedRoute  // GARANTIR QUE ESTE DADO SEJA PASSADO
-      }
-    });
+    // Navegar para o mapa sem abastecer - dados estão no contexto
+    navigate('/mapa-rota');
   };
 
   const calculatePreviewFuel = (option: 'full' | 'half' | 'quarter'): number => {
@@ -112,15 +127,8 @@ export const FuelPage: React.FC = () => {
   };
 
   const goBack = () => {
-    navigate('/routes');
+    navigate('/select-vehicle');
   };
-
-  // VALIDAÇÃO: Verificar se temos todos os dados necessários
-  if (!selectedRoute) {
-    console.error("ERRO: selectedRoute não encontrada! Redirecionando para seleção de rotas.");
-    navigate('/routes');
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#200259] to-[#300369] font-['Silkscreen']">

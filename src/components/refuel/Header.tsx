@@ -1,5 +1,5 @@
 import React from "react";
-import { useGame } from "../../contexts/GameContext.tsx";
+import { useGame } from "../../contexts/GameContext";
 
 interface HeaderProps {
   finalBalance: number;
