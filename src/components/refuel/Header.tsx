@@ -6,10 +6,18 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ finalBalance }) => {
-  const { playerBalance, formatCurrency } = useGame();
+  const { playerBalance, formatCurrency, selectedRoute } = useGame();
+  
   return (
     <header className="main-header">
-      <div className="header-title">TELA DE ABASTECIMENTO</div>
+      <div className="header-title">
+        TELA DE ABASTECIMENTO
+        {selectedRoute && (
+          <div className="text-sm mt-1">
+            🗺️ {selectedRoute.nome}
+          </div>
+        )}
+      </div>
       <div className="balance-info">
         <span>{formatCurrency(playerBalance)}</span>
         <span className="final-balance-display">

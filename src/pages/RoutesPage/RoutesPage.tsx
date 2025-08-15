@@ -39,13 +39,19 @@ export const RoutesPage: React.FC = () => {
   const navigate = useNavigate();
   const { 
     vehicle, 
-    playerBalance, 
+    playerBalance: availableMoney, 
     selectedRoute,
-    setSelectedRouteDetails 
+    setSelectedRouteDetails,
+    getGameSummary,
+    hasRequiredGameData
   } = useGame();
 
   // Verificar se temos dados necessários
   React.useEffect(() => {
+    console.log('🛣️ RoutesPage carregada - verificando dados...');
+    console.log('📊 Estado do jogo:', getGameSummary());
+    console.log('🔍 Dados necessários:', hasRequiredGameData());
+    
     if (!selectedRoute) {
       console.error("Nenhuma rota selecionada. Redirecionando para tela de desafio.");
       navigate("/desafio");
@@ -57,6 +63,8 @@ export const RoutesPage: React.FC = () => {
       navigate("/select-vehicle");
       return;
     }
+    
+    console.log('✅ RoutesPage carregada com sucesso');
   }, [selectedRoute, vehicle, navigate]);
 
   // Se não temos dados, mostrar carregamento
@@ -228,7 +236,7 @@ export const RoutesPage: React.FC = () => {
       console.log("✅ Continuando com a rota:", selectedRouteDetails.name);
       console.log("📋 Dados completos enviados:", {
         vehicle: vehicle.name,
-        money: playerBalance,
+        money: availableMoney,
         route: {
           id: selectedRouteDetails.id,
           routeId: selectedRouteDetails.routeId,
@@ -238,8 +246,9 @@ export const RoutesPage: React.FC = () => {
         },
       });
 
-      // Navegar para abastecimento - dados estão no contexto
-      navigate("/fuel");
+      console.log('⛽ Navegando para tela de abastecimento');
+      // Navegar para abastecimento usando a rota correta
+      navigate("/refuel");
     }
   };
 

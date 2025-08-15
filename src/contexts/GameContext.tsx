@@ -30,6 +30,9 @@ interface GameContextType extends GameState {
   resetGameState: () => void;
   updateVehicleFuel: (newFuel: number) => void;
   deductBalance: (amount: number) => void;
+  // Novas funções para gerenciar o estado de forma mais robusta
+  hasRequiredGameData: () => boolean;
+  getGameSummary: () => string;
 }
 
 // Estado inicial do jogo
@@ -56,30 +59,37 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [gameState, setGameState] = useState<GameState>(initialGameState);
 
   const setPlayerBalance = (balance: number) => {
+    console.log('💰 Atualizando saldo do jogador:', balance);
     setGameState(prev => ({ ...prev, playerBalance: balance }));
   };
 
   const setVehicle = (vehicle: Vehicle | null) => {
+    console.log('🚛 Atualizando veículo selecionado:', vehicle?.name || 'null');
     setGameState(prev => ({ ...prev, vehicle }));
   };
 
   const setSelectedRoute = (route: Desafio | null) => {
+    console.log('🗺️ Atualizando rota selecionada:', route?.nome || 'null');
     setGameState(prev => ({ ...prev, selectedRoute: route }));
   };
 
   const setSelectedRouteDetails = (routeDetails: any | null) => {
+    console.log('📋 Atualizando detalhes da rota:', routeDetails?.name || 'null');
     setGameState(prev => ({ ...prev, selectedRouteDetails: routeDetails }));
   };
 
   const setGameInProgress = (inProgress: boolean) => {
+    console.log('🎮 Atualizando status do jogo:', inProgress ? 'em progresso' : 'parado');
     setGameState(prev => ({ ...prev, gameInProgress: inProgress }));
   };
 
   const setGameProgress = (progress: GameState['gameProgress']) => {
+    console.log('📊 Atualizando progresso do jogo:', progress);
     setGameState(prev => ({ ...prev, gameProgress: progress }));
   };
 
   const updateVehicleFuel = (newFuel: number) => {
+    console.log('⛽ Atualizando combustível do veículo:', newFuel);
     setGameState(prev => ({
       ...prev,
       vehicle: prev.vehicle ? { ...prev.vehicle, currentFuel: newFuel } : null
@@ -87,10 +97,12 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const deductBalance = (amount: number) => {
+    console.log('💸 Deduzindo do saldo:', amount);
     setGameState(prev => ({ ...prev, playerBalance: prev.playerBalance - amount }));
   };
 
   const resetGameState = () => {
+    console.log('🔄 Resetando estado do jogo');
     setGameState(initialGameState);
   };
 
@@ -99,6 +111,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       style: "currency",
       currency: "BRL",
     });
+  };
+
+  // Nova função para verificar se temos todos os dados necessários
+  const hasRequiredGameData = () => {
+    return !!(gameState.vehicle && gameState.selectedRoute);
+  };
+
+  // Nova função para debug - resumo do estado atual
+  const getGameSummary = () => {
+    return `Saldo: ${formatCurrency(gameState.playerBalance)} | Veículo: ${gameState.vehicle?.name || 'Nenhum'} | Rota: ${gameState.selectedRoute?.nome || 'Nenhuma'}`;
   };
 
   const value: GameContextType = {
@@ -113,6 +135,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     deductBalance,
     resetGameState,
     formatCurrency,
+    hasRequiredGameData,
+    getGameSummary,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

@@ -11,11 +11,15 @@ export const FuelPage: React.FC = () => {
     selectedRoute: contextSelectedRoute, 
     playerBalance: contextPlayerBalance,
     setPlayerBalance,
-    updateVehicleFuel
+    updateVehicleFuel,
+    getGameSummary
   } = useGame();
 
   // Verificar se temos todos os dados necessários
   React.useEffect(() => {
+    console.log('⛽ FuelPage carregada - verificando dados...');
+    console.log('📊 Estado do jogo:', getGameSummary());
+    
     if (!contextSelectedRoute) {
       console.error("Nenhuma rota selecionada. Redirecionando para tela de desafio.");
       navigate("/desafio");
@@ -27,6 +31,8 @@ export const FuelPage: React.FC = () => {
       navigate("/select-vehicle");
       return;
     }
+    
+    console.log('✅ FuelPage carregada com sucesso');
   }, [contextSelectedRoute, contextVehicle, navigate]);
 
   // Se não temos dados, mostrar carregamento
@@ -95,10 +101,15 @@ export const FuelPage: React.FC = () => {
           ? vehicle.maxCapacity / 2
           : vehicle.maxCapacity / 4;
 
+      console.log('⛽ Abastecimento realizado - atualizando contexto');
+      console.log('🚛 Novo combustível:', newCurrentFuel);
+      console.log('💰 Custo:', cost);
+      
       // Atualizar dados no contexto
       updateVehicleFuel(newCurrentFuel);
       setPlayerBalance(availableMoney - cost);
 
+      console.log('🗺️ Navegando para o mapa');
       // Navegar para o mapa - dados estão no contexto
       navigate('/mapa-rota');
     } else {
@@ -107,6 +118,7 @@ export const FuelPage: React.FC = () => {
   };
 
   const handleSkipFuel = () => {
+    console.log('⏭️ Pulando abastecimento - navegando para o mapa');
     // Navegar para o mapa sem abastecer - dados estão no contexto
     navigate('/mapa-rota');
   };

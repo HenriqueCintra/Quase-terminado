@@ -20,7 +20,7 @@ import { useGame } from "@/contexts/GameContext";
 
 export const ApresentacaoDesafioPage = () => {
   const navigate = useNavigate();
-  const { setSelectedRoute, setPlayerBalance } = useGame();
+  const { setSelectedRoute, setPlayerBalance, resetGameState } = useGame();
 
   // 1. BUSCA A LISTA DE TODOS OS DESAFIOS (MAPAS) DA API
   const {
@@ -40,15 +40,22 @@ export const ApresentacaoDesafioPage = () => {
   const handleAceitarDesafio = () => {
     if (!desafio) return; // Proteção para caso o desafio não tenha carregado
 
+    console.log('🎯 Iniciando novo jogo - resetando estado anterior');
+    // Resetar estado anterior antes de iniciar novo jogo
+    resetGameState();
+    
+    console.log('🗺️ Salvando desafio selecionado no contexto:', desafio.nome);
     // Salvar o desafio no contexto do jogo
     setSelectedRoute(desafio);
     
+    console.log('💰 Definindo saldo inicial do jogo: R$ 20.000');
     // Definir saldo inicial do jogo
     setPlayerBalance(20000);
 
     setCarregando(true);
     setTimeout(() => {
       setCarregando(false);
+      console.log('🚛 Navegando para seleção de veículo');
       // Navegar sem passar estado - dados estão no contexto
       navigate("/select-vehicle");
     }, 1500);

@@ -52,8 +52,10 @@ createRoot(document.getElementById("app") as HTMLElement).render(
               <Route path="/tutorial" element={<TutorialPage />} />
 
               {/* ROTAS DO JOGO DE ABASTECIMENTO */}
+
+              {/* Rota para a nova tela de abastecimento */}
               <Route
-                path="/fuel"
+                path="/refuel"
                 element={
                   <ProtectedRoute>
                     <RefuelScreen />
@@ -68,10 +70,10 @@ createRoot(document.getElementById("app") as HTMLElement).render(
                   </ProtectedRoute>
                 }
               />
-
-              {/* Rota para a nova tela de abastecimento */}
+              
+              {/* Rota legacy para compatibilidade */}
               <Route
-                path="/refuel"
+                path="/fuel"
                 element={
                   <ProtectedRoute>
                     <RefuelScreen />
