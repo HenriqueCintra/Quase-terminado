@@ -24,9 +24,9 @@ const MinigameScreen = () => {
   const {
     vehicle,
     updateVehicleFuel,
+    playerBalance,
     deductBalance,
     formatCurrency,
-    getGameSummary,
   } = useGame();
 
   const refuelInfo = state?.refuelInfo as RefuelInfo | undefined;
@@ -43,21 +43,14 @@ const MinigameScreen = () => {
 
   useEffect(() => {
     if (!refuelInfo) {
-      console.error("❌ Dados de abastecimento não encontrados no state");
       alert("Erro: Dados de abastecimento não encontrados.");
-      navigate("/refuel");
-      return;
+      navigate("/fuel");
     }
     
     if (!vehicle) {
       console.error("Nenhum veículo encontrado no contexto. Redirecionando.");
       navigate("/select-vehicle");
-      return;
     }
-    
-    console.log('🎮 Minigame iniciado com sucesso');
-    console.log('📊 Estado do jogo:', getGameSummary());
-    console.log('⛽ Dados de abastecimento:', refuelInfo);
   }, [refuelInfo, vehicle, navigate]);
 
   useEffect(() => {
@@ -128,11 +121,8 @@ const MinigameScreen = () => {
       }
       setResult(res);
       
-      console.log('⛽ Atualizando combustível do veículo para:', newCurrentFuel);
       // Atualizar combustível do veículo
       updateVehicleFuel(newCurrentFuel);
-      
-      console.log('📊 Estado atualizado do jogo:', getGameSummary());
     }
   };
 
@@ -192,11 +182,7 @@ const MinigameScreen = () => {
               {result.message}
             </h2>
             <p id="result-detail">{result.detail}</p>
-            <button id="return-button" onClick={() => {
-              console.log('🗺️ Retornando ao mapa após minigame');
-              console.log('📊 Estado final do jogo:', getGameSummary());
-              navigate("/mapa-rota");
-            }}>
+            <button id="return-button" onClick={() => navigate("/mapa-rota")}>
               VOLTAR AO MAPA
             </button>
           </div>

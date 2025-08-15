@@ -18,7 +18,6 @@ export function RefuelScreen() {
     selectedRoute,
     setPlayerBalance,
     updateVehicleFuel,
-    getGameSummary,
   } = useGame();
 
   const [selectedFuel, setSelectedFuel] = useState("diesel");
@@ -27,26 +26,18 @@ export function RefuelScreen() {
 
   // Guarda de segurança - verificar se temos todos os dados necessários
   useEffect(() => {
-    console.log('🔍 Verificando dados necessários para abastecimento...');
-    console.log('📊 Estado atual do jogo:', getGameSummary());
-    
-    if (!selectedRoute) {
-      console.error("❌ Nenhuma rota selecionada. Redirecionando para tela de desafio.");
-      navigate("/desafio");
-      return;
-    }
-    
     if (!vehicle) {
-      console.error("❌ Nenhum veículo selecionado. Redirecionando para seleção de veículo.");
+      console.error("Nenhum veículo selecionado. Redirecionando para seleção de veículo.");
       navigate("/select-vehicle");
       return;
     }
-
-    console.log('✅ Todos os dados necessários estão disponíveis');
-    console.log('🚛 Veículo:', vehicle.name);
-    console.log('🗺️ Rota:', selectedRoute.nome);
-    console.log('💰 Saldo:', playerBalance);
-  }, [vehicle, selectedRoute, navigate, getGameSummary, playerBalance]);
+    
+    if (!selectedRoute) {
+      console.error("Nenhuma rota selecionada. Redirecionando para tela de desafio.");
+      navigate("/desafio");
+      return;
+    }
+  }, [vehicle, selectedRoute, navigate]);
 
   // Se não temos dados, mostrar carregamento
   if (!vehicle || !selectedRoute) {
@@ -54,14 +45,13 @@ export function RefuelScreen() {
       <div className="flex items-center justify-center h-screen bg-[#1e1e1e] text-white font-['Silkscreen'] text-xl">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Carregando dados do jogo...</p>
-          <p className="text-sm mt-2">Verificando veículo e rota selecionados...</p>
+          Carregando dados do jogo...
         </div>
       </div>
     );
   }
 
-  const vehicleFuelType = "diesel"; // Assumindo que todos os veículos usam diesel
+  const vehicleFuelType = vehicle?.fuelType || "diesel";
 
   const totalCost = useMemo(() => {
     return FUEL_PRICES[selectedFuel] * (vehicle.maxCapacity * selectedFraction);
@@ -71,17 +61,10 @@ export function RefuelScreen() {
   const canAfford = finalBalance >= 0;
 
   const handleRefuel = () => {
-    console.log('⛽ Iniciando processo de abastecimento...');
-    console.log('🔧 Combustível selecionado:', selectedFuel);
-    console.log('📊 Fração selecionada:', selectedFraction);
-    console.log('💰 Custo total:', totalCost);
-
     if (selectedFuel !== vehicleFuelType) {
-      console.warn('⚠️ Combustível incorreto! Aplicando penalidade.');
       setPlayerBalance(playerBalance - WRONG_FUEL_PENALTY);
       setShowPenaltyModal(true);
     } else {
-      console.log('🎮 Navegando para minigame de abastecimento');
       // Navegar para o minigame passando as informações de abastecimento
       navigate("/minigame", {
         state: {
@@ -96,25 +79,15 @@ export function RefuelScreen() {
   };
 
   const handleSkipFuel = () => {
-    console.log('⏭️ Pulando abastecimento - indo direto para o mapa');
     // Pular abastecimento e ir direto para o mapa
     navigate("/mapa-rota");
   };
-
-  const formatCurrency = (value: number) => value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
 
   return (
     <div className="refuel-container">
       <Modal
         show={showPenaltyModal}
-        onClose={() => {
-          setShowPenaltyModal(false);
-          // Após fechar o modal, continuar para o mapa
-          navigate("/mapa-rota");
-        }}
+        onClose={() => setShowPenaltyModal(false)}
         title="COMBUSTÍVEL ERRADO!"
         message={`Multa de ${formatCurrency(
           WRONG_FUEL_PENALTY
@@ -132,7 +105,10 @@ export function RefuelScreen() {
           totalCost={totalCost}
           onRefuel={handleRefuel}
           canRefuel={canAfford}
-          formatCurrency={formatCurrency}
+          formatCurrency={(value: number) => value.toLocaleString("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+          })}
         />
       </main>
       <button

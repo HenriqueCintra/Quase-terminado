@@ -87,7 +87,7 @@ const VehicleCard: React.FC<{
 
 export const VehicleSelectionPage = () => {
   const navigate = useNavigate();
-  const { selectedRoute, setVehicle, playerBalance, deductBalance } = useGame();
+  const { selectedRoute, setVehicle, playerBalance, setPlayerBalance } = useGame();
 
   // NOVO: Estados para guardar os veículos da API, o estado de loading e possíveis erros.
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -103,9 +103,7 @@ export const VehicleSelectionPage = () => {
     if (!selectedRoute) {
       console.error("Nenhum desafio selecionado. Redirecionando para tela de desafio.");
       navigate("/desafio");
-      return;
     }
-    console.log('✅ Desafio encontrado no contexto:', selectedRoute.nome);
   }, [selectedRoute, navigate]);
 
   // NOVO: useEffect para buscar os dados da API quando o componente for montado.
@@ -189,17 +187,14 @@ export const VehicleSelectionPage = () => {
     const selectedVehicle = vehicles[selectedIndex];
     
     if (selectedVehicle.cost <= playerBalance) {
-      console.log('🚛 Salvando veículo selecionado no contexto:', selectedVehicle.name);
       // Salvar veículo no contexto
       setVehicle(selectedVehicle);
       
-      console.log('💸 Deduzindo custo do veículo do saldo:', selectedVehicle.cost);
       // Deduzir custo do veículo do saldo
-      deductBalance(selectedVehicle.cost);
+      setPlayerBalance(playerBalance - selectedVehicle.cost);
       
-      console.log('⛽ Navegando para tela de abastecimento');
       // Navegar para tela de abastecimento
-      navigate("/refuel");
+      navigate("/fuel");
     } else {
       alert("Saldo insuficiente para comprar este veículo!");
     }

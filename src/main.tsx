@@ -16,7 +16,7 @@ import { TutorialPage } from "./pages/Tutorial/TutorialPage.tsx";
 import { PerfilPage } from "./pages/Perfil/PerfilPage.tsx";
 import { EditarPerfilPage } from "./pages/Perfil/EditarPerfil.tsx";
 import { ExcluirEquipePage } from "./pages/Perfil/ExcluirEquipe.tsx";
-import MapComponent from "./pages/mapaRota/MapComponent.tsx";
+import { MapComponent } from "./pages/mapaRota/MapComponent.tsx";
 import { EditarEquipePage } from "./pages/Perfil/EditarEquipe.tsx";
 import { CriarEquipePage } from "./pages/Perfil/CriarEquipe.tsx";
 import GameSelectionPage from "./pages/GameSelection/GameSelectionPage.tsx";
@@ -52,10 +52,8 @@ createRoot(document.getElementById("app") as HTMLElement).render(
               <Route path="/tutorial" element={<TutorialPage />} />
 
               {/* ROTAS DO JOGO DE ABASTECIMENTO */}
-
-              {/* Rota para a nova tela de abastecimento */}
               <Route
-                path="/refuel"
+                path="/fuel"
                 element={
                   <ProtectedRoute>
                     <RefuelScreen />
@@ -70,10 +68,10 @@ createRoot(document.getElementById("app") as HTMLElement).render(
                   </ProtectedRoute>
                 }
               />
-              
-              {/* Rota legacy para compatibilidade */}
+
+              {/* Rota para a nova tela de abastecimento */}
               <Route
-                path="/fuel"
+                path="/refuel"
                 element={
                   <ProtectedRoute>
                     <RefuelScreen />
