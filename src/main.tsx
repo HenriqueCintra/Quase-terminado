@@ -16,7 +16,7 @@ import { TutorialPage } from "./pages/Tutorial/TutorialPage.tsx";
 import { PerfilPage } from "./pages/Perfil/PerfilPage.tsx";
 import { EditarPerfilPage } from "./pages/Perfil/EditarPerfil.tsx";
 import { ExcluirEquipePage } from "./pages/Perfil/ExcluirEquipe.tsx";
-import { MapComponent } from "./pages/mapaRota/MapComponent.tsx";
+import MapComponent from "./pages/mapaRota/MapComponent.tsx";
 import { EditarEquipePage } from "./pages/Perfil/EditarEquipe.tsx";
 import { CriarEquipePage } from "./pages/Perfil/CriarEquipe.tsx";
 import GameSelectionPage from "./pages/GameSelection/GameSelectionPage.tsx";

@@ -3,7 +3,7 @@ import { HomePage } from "./pages/Home";
 import { VehicleSelectionPage } from "./pages/escolherVeiculo";
 import { RoutesPage } from "./pages/RoutesPage/RoutesPage";
 import { RefuelScreen, MinigameScreen } from "./pages/RefuelScreen";
-import { MapComponent } from "./pages/mapaRota/MapComponent";
+import MapComponent from "./pages/mapaRota/MapComponent";
 import "./App.css";
 
 function App() {
