@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useGame } from "../../contexts/GameContext.tsx";
+import { useGame } from "../../contexts/GameContext";
 // CORREÇÃO: A linha de importação da imagem foi REMOVIDA.
 import "../../styles/refuel.css";
 
@@ -23,9 +23,9 @@ const MinigameScreen = () => {
   const navigate = useNavigate();
   const {
     vehicle,
-    setVehicle,
+    updateVehicleFuel,
     playerBalance,
-    setPlayerBalance,
+    deductBalance,
     formatCurrency,
   } = useGame();
 
@@ -44,9 +44,14 @@ const MinigameScreen = () => {
   useEffect(() => {
     if (!refuelInfo) {
       alert("Erro: Dados de abastecimento não encontrados.");
-      navigate("/refuel");
+      navigate("/fuel");
     }
-  }, [refuelInfo, navigate]);
+    
+    if (!vehicle) {
+      console.error("Nenhum veículo encontrado no contexto. Redirecionando.");
+      navigate("/select-vehicle");
+    }
+  }, [refuelInfo, vehicle, navigate]);
 
   useEffect(() => {
     if (isPouring) {
@@ -73,6 +78,8 @@ const MinigameScreen = () => {
 
   const checkResult = (finalLevel: number) => {
     if (!refuelInfo) return;
+    if (!vehicle) return;
+    
     const deviation = Math.abs(finalLevel - targetLevel);
 
     if (finalLevel > targetLevel + TOLERANCE) {
@@ -85,7 +92,6 @@ const MinigameScreen = () => {
       const successRatio = finalLevel / targetLevel;
       const finalCost = refuelInfo.cost * successRatio;
       const litersAdded = vehicle.maxCapacity * (finalLevel / 100);
-      let newBalance = playerBalance - finalCost;
       let newCurrentFuel = Math.min(
         vehicle.currentFuel + litersAdded,
         vehicle.maxCapacity
@@ -100,6 +106,8 @@ const MinigameScreen = () => {
             1
           )}%. Custo: ${formatCurrency(finalCost)}`,
         };
+        // Deduzir custo proporcional
+        deductBalance(finalCost);
       } else {
         res = {
           message: "PERFEITO!",
@@ -108,11 +116,13 @@ const MinigameScreen = () => {
             refuelInfo.cost
           )}.`,
         };
-        newBalance = playerBalance - refuelInfo.cost;
+        // Deduzir custo total
+        deductBalance(refuelInfo.cost);
       }
       setResult(res);
-      setPlayerBalance(newBalance);
-      setVehicle({ ...vehicle, currentFuel: newCurrentFuel });
+      
+      // Atualizar combustível do veículo
+      updateVehicleFuel(newCurrentFuel);
     }
   };
 

@@ -1,13 +1,37 @@
 import React from "react";
-import { useGame } from "../../contexts/GameContext.tsx";
-// CORREÇÃO: A linha de importação da imagem foi REMOVIDA.
+import { useGame } from "../../contexts/GameContext";
+import { useNavigate } from "react-router-dom";
 
 const VehiclePanel = () => {
   const { vehicle } = useGame();
+  const navigate = useNavigate();
+
+  // Se não há veículo, não renderizar
+  if (!vehicle) {
+    return (
+      <section className="panel left-panel">
+        <div className="text-center">
+          <p>Carregando dados do veículo...</p>
+        </div>
+      </section>
+    );
+  }
+
   const fuelPercentage = (vehicle.currentFuel / vehicle.maxCapacity) * 100;
+
+  const handleGoBack = () => {
+    navigate("/select-vehicle");
+  };
+
+  const handleSkipRefuel = () => {
+    navigate("/mapa-rota");
+  };
+
   return (
     <section className="panel left-panel">
-      <button className="btn btn-top-left">&lt; VOLTAR</button>
+      <button className="btn btn-top-left" onClick={handleGoBack}>
+        &lt; VOLTAR
+      </button>
       <div className="panel-title">ABASTECER VEÍCULO?</div>
       <div className="vehicle-card">
         <div className="vehicle-info">
@@ -39,11 +63,12 @@ const VehiclePanel = () => {
           </div>
         </div>
         <div className="vehicle-image-container">
-          {/* CORREÇÃO: Usando caminho absoluto a partir da pasta public */}
           <img src="/caminhao.png" alt="Caminhão" className="truck-image" />
         </div>
       </div>
-      <button className="btn btn-bottom-left">PULAR ABASTECIMENTO</button>
+      <button className="btn btn-bottom-left" onClick={handleSkipRefuel}>
+        PULAR ABASTECIMENTO
+      </button>
     </section>
   );
 };

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { CalendarDays, MapPin, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useGame } from "@/contexts/GameContext";
 
 // TODO: Ajustar imagens, (adicionar imagens ao banco?)
 import caminhaoMedioPng from "@/assets/caminhao_medio.png";
@@ -86,6 +87,7 @@ const VehicleCard: React.FC<{
 
 export const VehicleSelectionPage = () => {
   const navigate = useNavigate();
+  const { selectedRoute, setVehicle, playerBalance, setPlayerBalance } = useGame();
 
   // NOVO: Estados para guardar os veículos da API, o estado de loading e possíveis erros.
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -94,8 +96,15 @@ export const VehicleSelectionPage = () => {
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null); // Inicia como nulo
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [availableMoney] = useState(10000);
   const [api, setApi] = useState<CarouselApi>();
+
+  // Verificar se temos o desafio selecionado
+  useEffect(() => {
+    if (!selectedRoute) {
+      console.error("Nenhum desafio selecionado. Redirecionando para tela de desafio.");
+      navigate("/desafio");
+    }
+  }, [selectedRoute, navigate]);
 
   // NOVO: useEffect para buscar os dados da API quando o componente for montado.
   useEffect(() => {
@@ -176,13 +185,18 @@ export const VehicleSelectionPage = () => {
   const handleConfirm = () => {
     if (selectedIndex === null) return; // Proteção extra
     const selectedVehicle = vehicles[selectedIndex];
-    if (selectedVehicle.cost <= availableMoney) {
-      navigate("/routes", {
-        state: {
-          selectedVehicle: selectedVehicle,
-          availableMoney: availableMoney - selectedVehicle.cost,
-        },
-      });
+    
+    if (selectedVehicle.cost <= playerBalance) {
+      // Salvar veículo no contexto
+      setVehicle(selectedVehicle);
+      
+      // Deduzir custo do veículo do saldo
+      setPlayerBalance(playerBalance - selectedVehicle.cost);
+      
+      // Navegar para tela de abastecimento
+      navigate("/fuel");
+    } else {
+      alert("Saldo insuficiente para comprar este veículo!");
     }
   };
 
@@ -219,7 +233,7 @@ export const VehicleSelectionPage = () => {
 
       {/* Saldo disponível */}
       <div className="absolute top-4 right-4 font-['Silkscreen'] bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 border border-black rounded-md shadow-md flex items-center justify-center h-10">
-        R$ {availableMoney.toLocaleString()}
+        R$ {playerBalance.toLocaleString()}
       </div>
 
       {/* Desafio de Entrega */}
@@ -320,9 +334,9 @@ export const VehicleSelectionPage = () => {
               <Button
                 onClick={handleConfirm}
                 className="bg-green-600 hover:bg-green-700 font-['Silkscreen']"
-                disabled={availableMoney < selectedVehicle.cost}
+                disabled={playerBalance < selectedVehicle.cost}
               >
-                {availableMoney < selectedVehicle.cost
+                {playerBalance < selectedVehicle.cost
                   ? "Dinheiro Insuficiente"
                   : "Confirmar"}
               </Button>

@@ -1,40 +1,48 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { Vehicle } from "../types/vehicle"; // Reutilizando a tipagem de veículo do seu projeto
+import { Vehicle } from "../types/vehicle";
+import { Map as Desafio } from "../types";
 
-// Definindo um estado inicial para o veículo e o jogador
-const initialVehicle: Vehicle = {
-  id: "caminhao_inicial",
-  name: "VAN",
-  capacity: 20, // Assumindo capacidade de carga, não de tanque
-  consumption: { asphalt: 9, dirt: 7 },
-  image: "/caminhao.png", // Usando o caminho a partir da pasta public
-  maxCapacity: 100, // Capacidade máxima do tanque em Litros
-  currentFuel: 50, // Combustível atual em Litros
-  cost: 10000,
-
-  // CORREÇÃO APLICADA AQUI: Adicionamos a propriedade 'spriteSheet' que estava faltando.
-  // Coloquei um valor padrão vazio. Se necessário, você pode alterar para o caminho correto.
-  spriteSheet: "",
-};
-
-// O resto do arquivo permanece o mesmo...
-
-const initialGameState = {
-  playerBalance: 20000.0,
-  vehicle: initialVehicle,
-};
-
-interface GameContextType {
+// Interface expandida para incluir todos os dados do jogo
+interface GameState {
   playerBalance: number;
-  vehicle: Vehicle;
-  setPlayerBalance: (balance: number) => void;
-  setVehicle: (vehicle: Vehicle) => void;
-  formatCurrency: (value: number) => string;
+  vehicle: Vehicle | null;
+  selectedRoute: Desafio | null;
+  selectedRouteDetails: any | null; // Para dados específicos da rota escolhida
+  gameInProgress: boolean;
+  gameProgress?: {
+    currentFuel: number;
+    progress: number;
+    currentPathIndex: number;
+    pathProgress: number;
+    gameTime: number;
+    activeGameId?: number;
+  };
 }
 
-export const GameContext = createContext<GameContextType | undefined>(
-  undefined
-);
+interface GameContextType extends GameState {
+  setPlayerBalance: (balance: number) => void;
+  setVehicle: (vehicle: Vehicle | null) => void;
+  setSelectedRoute: (route: Desafio | null) => void;
+  setSelectedRouteDetails: (routeDetails: any | null) => void;
+  setGameInProgress: (inProgress: boolean) => void;
+  setGameProgress: (progress: GameState['gameProgress']) => void;
+  formatCurrency: (value: number) => string;
+  resetGameState: () => void;
+  updateVehicleFuel: (newFuel: number) => void;
+  deductBalance: (amount: number) => void;
+}
+
+// Estado inicial do jogo
+const initialGameState: GameState = {
+  playerBalance: 20000.0,
+  vehicle: null,
+  selectedRoute: null,
+  selectedRouteDetails: null,
+  gameInProgress: false,
+  gameProgress: undefined,
+};
+
+export const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const useGame = () => {
   const context = useContext(GameContext);
@@ -44,13 +52,47 @@ export const useGame = () => {
   return context;
 };
 
-export const GameProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
-  const [playerBalance, setPlayerBalance] = useState(
-    initialGameState.playerBalance
-  );
-  const [vehicle, setVehicle] = useState<Vehicle>(initialGameState.vehicle);
+export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [gameState, setGameState] = useState<GameState>(initialGameState);
+
+  const setPlayerBalance = (balance: number) => {
+    setGameState(prev => ({ ...prev, playerBalance: balance }));
+  };
+
+  const setVehicle = (vehicle: Vehicle | null) => {
+    setGameState(prev => ({ ...prev, vehicle }));
+  };
+
+  const setSelectedRoute = (route: Desafio | null) => {
+    setGameState(prev => ({ ...prev, selectedRoute: route }));
+  };
+
+  const setSelectedRouteDetails = (routeDetails: any | null) => {
+    setGameState(prev => ({ ...prev, selectedRouteDetails: routeDetails }));
+  };
+
+  const setGameInProgress = (inProgress: boolean) => {
+    setGameState(prev => ({ ...prev, gameInProgress: inProgress }));
+  };
+
+  const setGameProgress = (progress: GameState['gameProgress']) => {
+    setGameState(prev => ({ ...prev, gameProgress: progress }));
+  };
+
+  const updateVehicleFuel = (newFuel: number) => {
+    setGameState(prev => ({
+      ...prev,
+      vehicle: prev.vehicle ? { ...prev.vehicle, currentFuel: newFuel } : null
+    }));
+  };
+
+  const deductBalance = (amount: number) => {
+    setGameState(prev => ({ ...prev, playerBalance: prev.playerBalance - amount }));
+  };
+
+  const resetGameState = () => {
+    setGameState(initialGameState);
+  };
 
   const formatCurrency = (value: number) => {
     return value.toLocaleString("pt-BR", {
@@ -59,11 +101,17 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
-  const value = {
-    playerBalance,
-    vehicle,
+  const value: GameContextType = {
+    ...gameState,
     setPlayerBalance,
     setVehicle,
+    setSelectedRoute,
+    setSelectedRouteDetails,
+    setGameInProgress,
+    setGameProgress,
+    updateVehicleFuel,
+    deductBalance,
+    resetGameState,
     formatCurrency,
   };
 
